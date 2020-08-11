@@ -1,0 +1,100 @@
+
+# Chat Messages
+warring_states.messages.player_stop_flying=A strange force causes your flight to fail.
+warring_states.messages.place_block.permission_denied=You do not have permission to place blocks here.
+warring_states.messages.place_block.chunk_claimed=This chunk has already been claimed by %s.
+warring_states.messages.break_block_permission_denied=You do not have permission to break blocks here.
+warring_states.messages.interact_block_permission_denied=You do not have permission to interact with blocks here.
+warring_states.messages.explode_block_permission_denied=You do not have permission to explode blocks here.
+warring_states.messages.pending_citizenship_application=Your application for %s is currently pending.
+warring_states.messages.interact_tec_permission_denied=You do not have permission to manage this State.
+warring_states.messages.claim_territory.permission_denied=You do not have permission to claim territory for %s.
+warring_states.messages.already_applied_to_different_state=You already have a pending application for another State.
+warring_states.messages.already_at_war=You are already at war with another State. Finish that one first you warmonger.
+warring_states.messages.need_war_reason=You need at least one wargoal to declare war.
+warring_states.messages.declare_war.permission_denied=You do not have permission to declare war for %s.
+warring_states.messages.cannnot_claim_from_enemy=You cannot claim territory from somebody you are at war with. Finish the current war first.
+warring_states.messages.cannot_claim_capital=You cannot claim somebody else's capital.
+warring_states.messages.cannot_capture_without_wargoal=You cannot capture territory without a wargoal.
+warring_states.messages.cannot_steal_own_territory=You cannot steal your own territory. How would that even work?
+warring_states.messages.cannot_steal_from_nobody=You cannot steal territory that nobody owns.
+warring_states.messages.cannot_steal_for_nobody=You cannot steal territory if you are not a member of a State.
+warring_states.messages.rescind_claim.permission_denied=You do not have permission to rescind claims for %s.
+warring_states.messages.management.permission_denied=You do not have persmission to manage State data for %s.
+warring_states.messages.declare_war.nobody_online=You cannot declare war on a State that has nobody online to defend it.
+warring_states.messages.dissolve_state.permission_denied=You do not have permission to dissolve %s.
+warring_states.messages.server_disallows_dissolving_states_with_members=The server does not allow dissolving a state with no members.
+warring_states.messages.application.accepted=Your application to %s has been accepted by %s.
+warring_states.messages.application.rejected=Your application to %s has been rejected by %s.
+warring_states.messages.new_citizen=%s has just been accepted to %s.
+warring_states.messages.recruitment.permission_denied=You do not have permissions to accept or reject citizens for %s.
+warring_states.messages.update_citizens.permission_denied=You do not have permissions to change the privileges of citizens for %s.
+warring_states.messages.kick_citizen.permission_denied=You do not have permission to kick %s.
+warring_states.messages.you_have_been_kicked=You have been kicked from %s by %s.
+warring_states.messages.player_has_been_kicked_by=%s has been kicked from %s by %s.
+warring_states.messages.move_capital.permission_denied=You do not have permission to move the capital of %s to here.
+warring_states.messages.move_capital.failure=Moving the capitol of %s here failed.
+warring_states.messages.move_capital.success=Moved the capitol of %s to %s.
+
+# Tooltips
+warring_states.tooltip.war_flight_disabled=A strange force prevents this from working properly.
+
+# Gui Strings
+warring_states.gui.state.citizenship_apply=Are you sure you want to apply for citizenship with %s?
+warring_states.gui.management.declare_war=Are you sure you want to declare war on %s?
+
+warring_states.gui.citizen_management=Citizen Management
+warring_states.gui.warrable_states=Other States
+
+warring_states.gui.management_title=%s Management
+warring_states.gui.revoke_citizenship=Leave State
+warring_states.gui.manage_applications=Manage Applications
+warring_states.gui.rescind_claim=Rescind Claim
+warring_states.gui.declare_war=Declare War
+warring_states.gui.change_name=Change Name
+warring_states.gui.change_desc=Change Description
+warring_states.gui.view_current_conflicts=View Current Conflicts
+warring_states.gui.manage_citizens=Manage Citizens
+warring_states.gui.dissolve_state=Dissolve State
+warring_states.gui.move_capital=Move Capitol
+
+warring_states.gui.confirm=Confirm
+warring_states.gui.cancel=Cancel
+
+warring_states.gui.accept=Accept
+warring_states.gui.reject=Reject
+
+warring_states.gui.belligerents=Belligerents
+warring_states.gui.defenders=Defenders
+
+warring_states.gui.kick=Kick
+warring_states.gui.goback=Go Back
+
+warring_states.gui.dissolve_state_confirmation=Are you sure you want to dissolve %s? This cannot be undone!
+warring_states.gui.rescind_claim_confirmation=Are you sure you want to rescind your claim?
+warring_states.gui.revoke_citizenship_confirmation=Are you sure you want to cancel your citizenship?
+warring_states.gui.move_capital_confirmation=Are you sure you want to move the capital here?
+
+warring_states.gui.citizen_name=Citizen "%s"
+
+warring_states.boss_bar.capturing_claimer=Capture in progress of %s's claimer.
+
+# Creative Tab
+itemGroup.warring_states=Warring States
+
+# Items
+item.wargoal_claimer.name=Wargoal Claimer
+
+# Blocks
+tile.warring_states.claimer.name=Claimer
+
+# Privileges
+warring_states.privilege_level.full=Full
+warring_states.privilege_level.none=None
+warring_states.privilege_level.claim_territory=Claim Territory
+warring_states.privilege_level.declare_war=Declare War
+warring_states.privilege_level.steal_territory=Steal Territory
+warring_states.privilege_level.modify_blocks=Modify Blocks
+warring_states.privilege_level.interact=Interact
+warring_states.privilege_level.management=Management
+warring_states.privilege_level.recruitment=Recruitment
