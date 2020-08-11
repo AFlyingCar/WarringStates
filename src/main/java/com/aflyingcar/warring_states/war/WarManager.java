@@ -118,6 +118,15 @@ public final class WarManager extends BaseManager {
         if(state == null)
             return false;
 
+        return isAtWar(state);
+    }
+
+    /**
+     * Checks whether this state is currently in a war
+     * @param state The state to check
+     * @return True if this state is currently in a war, false otherwise.
+     */
+    public boolean isAtWar(@Nonnull State state) {
         for(Conflict c : conflicts) {
             if(c.getSideOf(state) != null) {
                 return true;
