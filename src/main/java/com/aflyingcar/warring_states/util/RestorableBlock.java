@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 public class RestorableBlock implements ISerializable{
     private ExtendedBlockPos pos;
@@ -128,5 +129,18 @@ public class RestorableBlock implements ISerializable{
     public void setPlacedBlock(IBlockState placedBlock) {
         this.wasPreviouslyReplacement = isReplacementOperation();
         this.placedBlock = placedBlock;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+        RestorableBlock that = (RestorableBlock) o;
+        return Objects.equals(pos, that.pos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos);
     }
 }
