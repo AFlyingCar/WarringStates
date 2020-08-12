@@ -29,6 +29,8 @@ public class BlockClaimer extends Block implements ITileEntityProvider {
         setRegistryName(WarringStatesMod.MOD_ID, NAME);
         setHardness(1.0f);
         setCreativeTab(CreativeTab.TAB);
+        setResistance(600000000000000.0f); // Make this impossibly large (like bedrock)
+        setBlockUnbreakable(); // Honestly, just make it unbreakable
     }
 
     @Override
@@ -38,6 +40,11 @@ public class BlockClaimer extends Block implements ITileEntityProvider {
             return te.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
         }
 
+        return true;
+    }
+
+    @Override
+    public boolean canHarvestBlock(IBlockAccess world, BlockPos pos, EntityPlayer player) {
         return true;
     }
 
@@ -55,7 +62,7 @@ public class BlockClaimer extends Block implements ITileEntityProvider {
         TileEntityClaimer te = (TileEntityClaimer) worldIn.getTileEntity(pos);
 
         // This can only be harvested by players who are in the state
-        if(te != null && te.canBeHarvested(player)) {
+        if(te != null) {
             te.onBlockHarvested(worldIn, pos, state, player);
             super.onBlockHarvested(worldIn, pos, state, player);
         }
