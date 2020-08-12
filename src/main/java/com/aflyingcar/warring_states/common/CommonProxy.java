@@ -6,7 +6,6 @@ import com.aflyingcar.warring_states.commands.*;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.util.PlayerUtils;
 import com.aflyingcar.warring_states.war.WarManager;
-import com.ibm.icu.impl.Differ;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemElytra;
@@ -73,6 +72,8 @@ public class CommonProxy {
         event.registerServerCommand(new CommandListConflicts());
         event.registerServerCommand(new CommandSetCapital());
         event.registerServerCommand(new CommandForceWinner());
+        event.registerServerCommand(new CommandClearAllRestorationOperations());
+        event.registerServerCommand(new CommandSanityCheckControlledTerritory());
     }
 
     public void registerDefaultFlyingCheckAndConsumers() {
