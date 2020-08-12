@@ -5,11 +5,8 @@ import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.api.CitizenPrivileges;
 import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
-import com.aflyingcar.warring_states.util.ChunkGroup;
-import com.aflyingcar.warring_states.util.ISerializable;
-import com.aflyingcar.warring_states.util.NBTUtils;
 import com.aflyingcar.warring_states.util.Timer;
-import com.aflyingcar.warring_states.util.WorldUtils;
+import com.aflyingcar.warring_states.util.*;
 import com.aflyingcar.warring_states.war.goals.WarGoalFactory;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -518,6 +515,61 @@ public class State implements ISerializable {
     public void kickPlayer(UUID citizenID) {
         citizens.remove(citizenID);
         WarringStatesMod.proxy.markStateManagerDirty();
+    }
+
+    /**
+     * Verifies that all territory claimed by this State contains a BlockClaimer+TileEntityClaimer _somewhere_ in the chunk
+     * This is a potentially expensive operation, and should be done rarely
+     */
+    public void sanityCheckAllClaimedTerritory(boolean fixProblems) {
+        WarringStatesMod.getLogger().info("Beginning sanity check of all territory controlled by " + this);
+        int problems = 0;
+        List<Pair<ChunkPos, Integer>> toUnclaim = new ArrayList<>();
+        for(ChunkGroup claimed : controlledTerritory) {
+            World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(claimed.getDimension());
+            for(ChunkPos chunkPos : claimed.getChunks()) {
+                List<TileEntityClaimer> claimers = WorldUtils.getTileEntitiesWithinChunk(TileEntityClaimer.class, world, chunkPos);
+
+                if(claimers.size() > 1) {
+                    WarringStatesMod.getLogger().warn("Multiple TileEntityClaimers found in chunk " + chunkPos + ".");
+                    if(fixProblems) {
+                        WarringStatesMod.getLogger().warn("Destroying all but the first which belong to us!");
+                        boolean found = false;
+                        for(TileEntityClaimer claimer : claimers) {
+                            if(claimer.getStateUUID().equals(getUUID())) {
+                                if(found) {
+                                    //noinspection ResultOfMethodCallIgnored
+                                    WorldUtils.destroyClaimer(new ExtendedBlockPos(claimer.getPos(), claimed.getDimension()));
+                                } else {
+                                    found = true;
+                                }
+                            }
+                        }
+                    }
+                    ++problems;
+                } else if(claimers.isEmpty()) {
+                    WarringStatesMod.getLogger().warn("No claimer found in chunk " + chunkPos + " which we claim to control!");
+                    if(fixProblems) {
+                        WarringStatesMod.getLogger().warn("Relinquishing our claim on this chunk!");
+                        toUnclaim.add(Pair.of(chunkPos, claimed.getDimension()));
+                    }
+                    ++problems;
+                }
+            }
+        }
+
+        if(fixProblems) {
+            for(Pair<ChunkPos, Integer> info : toUnclaim) {
+                unclaimTerritory(info.getLeft(), info.getRight());
+            }
+        }
+
+        WarringStatesMod.getLogger().info("Sanity check complete. " + problems + (fixProblems ? " problems fixed." : " problems detected."));
+    }
+
+    @Override
+    public String toString() {
+        return "State{UUID=" + uuid + ", Name=" + name + "}";
     }
 }
 
