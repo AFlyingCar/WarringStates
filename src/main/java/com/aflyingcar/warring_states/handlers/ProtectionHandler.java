@@ -10,7 +10,10 @@ import com.aflyingcar.warring_states.events.TerritoryClaimedEvent;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
-import com.aflyingcar.warring_states.util.*;
+import com.aflyingcar.warring_states.util.ExtendedBlockPos;
+import com.aflyingcar.warring_states.util.GuiUtils;
+import com.aflyingcar.warring_states.util.RestorableBlock;
+import com.aflyingcar.warring_states.util.WorldUtils;
 import com.aflyingcar.warring_states.war.Conflict;
 import com.aflyingcar.warring_states.war.WarManager;
 import net.minecraft.block.Block;
@@ -21,7 +24,6 @@ import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityPiston;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -337,6 +339,8 @@ public class ProtectionHandler {
 
     @SubscribeEvent
     public static void onTrample(BlockEvent.FarmlandTrampleEvent event) {
+        if(event.getWorld().isRemote) return;
+
         Entity trampler = event.getEntity();
         BlockPos cropsPos = event.getPos();
 
