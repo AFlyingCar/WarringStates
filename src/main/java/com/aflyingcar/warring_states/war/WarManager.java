@@ -8,6 +8,8 @@ import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.util.BaseManager;
 import com.aflyingcar.warring_states.util.ExtendedBlockPos;
+import com.aflyingcar.warring_states.util.NBTUtils;
+import com.aflyingcar.warring_states.util.RestorableBlock;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -36,10 +38,16 @@ public final class WarManager extends BaseManager {
     private final List<Predicate<ExtendedBlockPos>> ignoreBlockBreakPredicate;
     private final List<Predicate<ExtendedBlockPos>> ignoreBlockPlacePredicate;
 
+    private Map<ExtendedBlockPos, Pair<RestorableBlock, Integer>> restorableBlockConflictMapping;
+    private Map<Integer, Set<ExtendedBlockPos>> conflictModificationMapping;
+
     private WarManager() {
         conflicts = new ArrayList<>();
         ignoreBlockBreakPredicate = new ArrayList<>();
         ignoreBlockPlacePredicate = new ArrayList<>();
+
+        restorableBlockConflictMapping = new HashMap<>();
+        conflictModificationMapping = new HashMap<>();
     }
 
     public static WarManager getInstance() {
@@ -47,6 +55,80 @@ public final class WarManager extends BaseManager {
             instance = new WarManager();
 
         return instance;
+    }
+
+    public void clearRollbackOperations() {
+        restorableBlockConflictMapping.clear();
+        conflictModificationMapping.clear();
+        markDirty();
+    }
+
+    public void saveChangeForRollback(RestorableBlock block, Conflict conflict) {
+        ExtendedBlockPos blockPos = block.getPos();
+        if(restorableBlockConflictMapping.containsKey(blockPos)) {
+            Pair<RestorableBlock, Integer> conflictPairing = restorableBlockConflictMapping.get(blockPos);
+
+            if(block.isReplacementOperation()) {
+                conflictPairing.getLeft().setPlacedBlock(block.getPlacedBlock());
+            } else {
+                conflictPairing.getLeft().setPlacedBlock(null);
+            }
+
+            markDirty();
+            return;
+        } else {
+            restorableBlockConflictMapping.put(blockPos, Pair.of(block, 0));
+        }
+        RestorableBlock restorableBlock = restorableBlockConflictMapping.get(blockPos).getKey();
+        int numConflicts = restorableBlockConflictMapping.get(blockPos).getValue();
+        restorableBlockConflictMapping.put(blockPos, Pair.of(restorableBlock, numConflicts + 1));
+
+        int cindex = conflicts.indexOf(conflict);
+        conflictModificationMapping.putIfAbsent(cindex, new HashSet<>());
+        conflictModificationMapping.get(cindex).add(blockPos);
+
+        markDirty();
+    }
+
+    public List<RestorableBlock> getRestorableBlocksFor(Conflict conflict) {
+        int cindex = conflicts.indexOf(conflict);
+
+        Set<ExtendedBlockPos> positions = conflictModificationMapping.get(cindex);
+
+        return Collections.unmodifiableList(positions.stream().filter(restorableBlockConflictMapping::containsKey).map(restorableBlockConflictMapping::get).map(Pair::getLeft).collect(Collectors.toList()));
+    }
+
+    public void rollbackChangesFor(Conflict conflict) {
+        int cindex = conflicts.indexOf(conflict);
+        if(cindex < 0) {
+            WarringStatesMod.getLogger().error("Unable to find conflict in list of current conflicts! indexOf returned -1");
+            return;
+        }
+
+        Set<ExtendedBlockPos> modifiedPositions = conflictModificationMapping.get(cindex);
+
+        if(modifiedPositions != null) {
+            for(ExtendedBlockPos pos : modifiedPositions) {
+                Pair<RestorableBlock, Integer> restorablePair = restorableBlockConflictMapping.getOrDefault(pos, null);
+                if(restorablePair == null) {
+                    WarringStatesMod.getLogger().error("Have position cached for rollback, but no restorable block was found cached with this position! Skipping " + pos);
+                } else {
+                    // Decrease by 1
+                    int newConflictCount = restorablePair.getRight() - 1;
+
+                    // If no more conflicts are tracking this changed position, then restore it
+                    if(newConflictCount <= 0) {
+                        restorablePair.getLeft().restore();
+                        restorableBlockConflictMapping.remove(pos);
+                    } else {
+                        restorableBlockConflictMapping.put(pos, Pair.of(restorablePair.getLeft(), newConflictCount));
+                    }
+                }
+            }
+        }
+
+        conflictModificationMapping.remove(cindex); // Remove from the mapping
+        markDirty();
     }
 
     public void registerIgnoreBlockBreakPredicate(Predicate<ExtendedBlockPos> ignorePredicate) {
@@ -76,6 +158,34 @@ public final class WarManager extends BaseManager {
                 conflicts.add(conflict);
             }
         }
+
+        if(compound.hasKey("restorableBlockMapping")) {
+            NBTTagList nbtEntries = compound.getTagList("restorableBlockMapping", 10);
+            restorableBlockConflictMapping = NBTUtils.deserializeMap(nbtEntries, nbtBase -> {
+                NBTTagCompound nbtEntry = ((NBTTagCompound)nbtBase);
+
+                ExtendedBlockPos pos = new ExtendedBlockPos(nbtEntry.getInteger("x"), nbtEntry.getInteger("y"), nbtEntry.getInteger("z"), nbtEntry.getInteger("dimID"));
+                Pair<RestorableBlock, Integer> pair = Pair.of(new RestorableBlock(), nbtEntry.getInteger("numConflicts"));
+                pair.getLeft().readNBT(nbtEntry.getCompoundTag("restorable"));
+
+                return Pair.of(pos, pair);
+            });
+        }
+
+        if(compound.hasKey("conflictModificationMapping")) {
+            NBTTagList nbtEntries = compound.getTagList("conflictModificationMapping", 10);
+            conflictModificationMapping = NBTUtils.deserializeMap(nbtEntries, nbtBase -> {
+                NBTTagCompound nbtEntry = ((NBTTagCompound)nbtBase);
+
+                int conflictIdx = nbtEntry.getInteger("conflictIndex");
+                NonNullList<ExtendedBlockPos> positions = NBTUtils.deserializeGenericList(nbtEntry.getTagList("positions", 10), base -> {
+                    NBTTagCompound nbtPos = ((NBTTagCompound)base);
+                    return new ExtendedBlockPos(nbtPos.getInteger("x"), nbtPos.getInteger("y"), nbtPos.getInteger("z"), nbtPos.getInteger("dimID"));
+                });
+
+                return Pair.of(conflictIdx, new HashSet<>(positions));
+            });
+        }
     }
 
     @Override
@@ -89,6 +199,35 @@ public final class WarManager extends BaseManager {
             nbtConflicts.appendTag(nbtConflict);
         }
         compound.setTag("conflicts", nbtConflicts);
+
+        compound.setTag("restorableBlockMapping", NBTUtils.serializeMap(restorableBlockConflictMapping, entry -> {
+            NBTTagCompound nbtEntry = new NBTTagCompound();
+            nbtEntry.setInteger("x", entry.getKey().getX());
+            nbtEntry.setInteger("y", entry.getKey().getY());
+            nbtEntry.setInteger("z", entry.getKey().getZ());
+            nbtEntry.setInteger("dimID", entry.getKey().getDimID());
+
+            nbtEntry.setTag("restorable", entry.getValue().getKey().writeNBT(new NBTTagCompound()));
+            nbtEntry.setInteger("numConflicts", entry.getValue().getValue());
+
+            return nbtEntry;
+        }));
+
+        compound.setTag("conflictModificationMapping", NBTUtils.serializeMap(conflictModificationMapping, entry -> {
+            NBTTagCompound nbtEntry = new NBTTagCompound();
+
+            nbtEntry.setInteger("conflictIndex", entry.getKey());
+            nbtEntry.setTag("positions", NBTUtils.serializeCollection(entry.getValue(), pos -> {
+                NBTTagCompound nbtPos = new NBTTagCompound();
+                nbtPos.setInteger("x", pos.getX());
+                nbtPos.setInteger("y", pos.getY());
+                nbtPos.setInteger("z", pos.getZ());
+                nbtPos.setInteger("dimID", pos.getDimID());
+                return nbtPos;
+            }));
+
+            return nbtEntry;
+        }));
 
         return compound;
     }

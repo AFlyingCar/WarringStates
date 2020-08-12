@@ -5,13 +5,15 @@ import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
-import com.aflyingcar.warring_states.util.*;
 import com.aflyingcar.warring_states.util.Timer;
+import com.aflyingcar.warring_states.util.*;
 import com.aflyingcar.warring_states.war.goals.StealChunkWarGoal;
 import com.aflyingcar.warring_states.war.goals.WarGoalFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 
@@ -29,8 +31,6 @@ public class Conflict implements ISerializable {
 
     private final Set<BlockPos> capturedClaimers;
 
-    private List<RestorableBlock> restorableBlocks;
-
     private final Timer warStartTimer;
     private Side forcedWinner = null;
 
@@ -40,7 +40,6 @@ public class Conflict implements ISerializable {
         this.warStartTimer = new Timer();
 
         this.capturedClaimers = Sets.newHashSet();
-        this.restorableBlocks = NonNullList.create();
     }
 
     public Conflict(@Nonnull State defender, @Nonnull State belligerent, @Nonnull NonNullList<IWarGoal> belligerentGoals) {
@@ -53,7 +52,6 @@ public class Conflict implements ISerializable {
         this.defenders.get(defender).add(Objects.requireNonNull(WarGoalFactory.newWargoal(WarGoalFactory.Goals.WAITOUT_TIMER)));
 
         this.belligerents.put(belligerent, belligerentGoals);
-        this.restorableBlocks = NonNullList.create();
     }
 
     @Override
@@ -84,8 +82,6 @@ public class Conflict implements ISerializable {
 
         NBTTagCompound timerTag = new NBTTagCompound();
         nbt.setTag("warStartTimer", warStartTimer.writeNBT(timerTag));
-
-        nbt.setTag("restorableBlocks", NBTUtils.serializeCollection(restorableBlocks));
 
         // nbt.setFloat("timeSinceWarStarted", timeSinceWarStarted);
 
@@ -130,10 +126,6 @@ public class Conflict implements ISerializable {
             NBTTagCompound timerTag = nbt.getCompoundTag("warStartTimer");
             warStartTimer.readNBT(timerTag);
         }
-
-        if(nbt.hasKey("restorableBlocks")) {
-            restorableBlocks = NBTUtils.deserializeList(nbt.getTagList("restorableBlocks", 10), n -> new RestorableBlock());
-        }
     }
 
     /**
@@ -143,32 +135,19 @@ public class Conflict implements ISerializable {
         warStartTimer.start();
     }
 
+    @Deprecated
     public void saveChangeForRollback(RestorableBlock restorableBlock) {
-        // Do we already have a saved rollback change for this position?
-        //  If so, make sure we modify it properly
-        for(RestorableBlock block : restorableBlocks) {
-            if(block.getPos().equals(restorableBlock.getPos())) {
-                if(restorableBlock.isReplacementOperation()) {
-                    block.setPlacedBlock(restorableBlock.getPlacedBlock());
-                } else {
-                    block.setPlacedBlock(null);
-                }
-
-                return;
-            }
-        }
-
-        restorableBlocks.add(restorableBlock);
+        WarManager.getInstance().saveChangeForRollback(restorableBlock, this);
     }
 
+    @Deprecated
     public void rollbackChanges() {
-        for(RestorableBlock restorableBlock : restorableBlocks) {
-            restorableBlock.restore();
-        }
+        WarManager.getInstance().rollbackChangesFor(this);
     }
 
+    @Deprecated
     public List<RestorableBlock> getRestorableBlocks() {
-        return Collections.unmodifiableList(restorableBlocks);
+        return WarManager.getInstance().getRestorableBlocksFor(this);
     }
 
     @Nonnull
