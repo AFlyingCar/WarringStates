@@ -47,7 +47,7 @@ warring_states.gui.citizen_management=Citizen Management
 warring_states.gui.warrable_states=Other States
 
 warring_states.gui.management_title=%s Management
-warring_states.gui.revoke_citizenship=Leave State
+warring_states.gui.revoke_citizenship=Leave %s
 warring_states.gui.manage_applications=Manage Applications
 warring_states.gui.rescind_claim=Rescind Claim
 warring_states.gui.declare_war=Declare War
@@ -55,7 +55,7 @@ warring_states.gui.change_name=Change Name
 warring_states.gui.change_desc=Change Description
 warring_states.gui.view_current_conflicts=View Current Conflicts
 warring_states.gui.manage_citizens=Manage Citizens
-warring_states.gui.dissolve_state=Dissolve State
+warring_states.gui.dissolve_state=Dissolve %s
 warring_states.gui.move_capital=Move Capitol
 
 warring_states.gui.confirm=Confirm
