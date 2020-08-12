@@ -16,8 +16,10 @@ import net.minecraft.world.chunk.Chunk;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * A manager for states. Only accessible on the server-side
@@ -54,6 +56,11 @@ public final class StateManager extends BaseManager {
             for(NBTBase nbtState : nbtStates) {
                 State state = new State();
                 state.readNBT((NBTTagCompound) nbtState);
+
+                if(WarringStatesConfig.performTerritorySanityCheckOnStartup) {
+                    state.sanityCheckAllClaimedTerritory(WarringStatesConfig.shouldProblemsBeFixedDuringSanityCheck);
+                }
+
                 states.add(state);
             }
         }

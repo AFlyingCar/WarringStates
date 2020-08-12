@@ -71,4 +71,10 @@ public class WarringStatesConfig {
 
     @Config.Comment("How many hours should pass between each chunk decay?")
     public static int numberOfHoursBetweenEachChunkDecay = 48; // 2 days
+
+    @Config.Comment("Should territory be sanity checked on startup?")
+    public static boolean performTerritorySanityCheckOnStartup = false;
+
+    @Config.Comment("Should problems be fixed during the startup sanity check. Does nothing if performTerritorySanityCheckOnStartup is false.")
+    public static boolean shouldProblemsBeFixedDuringSanityCheck = true;
 }
