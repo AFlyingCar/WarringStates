@@ -110,7 +110,7 @@ public class StateManagementGui extends GuiScreen {
             if(newWidth > largestWidth)
                 largestWidth = newWidth;
 
-            GuiButton button = addButton(new GuiButton(buttonID.ordinal(), 0, 0, 0, 20, buttonID.translate()));
+            GuiButton button = addButton(new GuiButton(buttonID.ordinal(), 0, 0, 0, 20, buttonID.translate(currentName)));
             // Does this person not have sufficient privileges to access this feature
             if((playerPrivileges & buttonID.getPrivilegeMask()) != buttonID.getPrivilegeMask()) {
                 button.enabled = false;
