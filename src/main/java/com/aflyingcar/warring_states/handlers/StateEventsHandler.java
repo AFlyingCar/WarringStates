@@ -13,7 +13,9 @@ import com.aflyingcar.warring_states.war.Conflict;
 import com.aflyingcar.warring_states.war.WarManager;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -103,7 +105,29 @@ public class StateEventsHandler {
 
     @SubscribeEvent
     public static void onChunkCaptureBeginEvent(ChunkCaptureBeginEvent event) {
-        // TODO
+        Conflict conflict = event.getConflict();
+        Conflict.Side attackerSide = conflict.getSideOf(event.getCapturerState());
+        if(attackerSide == null) {
+            WarringStatesMod.getLogger().error("ChunkCaptureBegin occurred from state " + event.getCapturerState().getName() + ", but we could not determine which side of the conflict that state is on.");
+            return;
+        }
+
+        BlockPos pos = event.getClaimer().getPos();
+        String posString = "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")";
+
+        Set<State> chunkDefenderStates;
+        switch(attackerSide) {
+            case DEFENDER:
+                chunkDefenderStates = conflict.getBelligerents().keySet();
+                break;
+            case BELLIGERENT:
+                chunkDefenderStates = conflict.getDefenders().keySet();
+                break;
+            default:
+                return;
+        }
+
+        chunkDefenderStates.stream().map(State::getCitizens).flatMap(Collection::stream).map(PlayerUtils::getPlayerByUUID).filter(Objects::nonNull).forEach(player -> player.sendMessage(new TextComponentTranslation("warring_states.messages.chunk_capture_beginning", posString)));
     }
 
     @SubscribeEvent
