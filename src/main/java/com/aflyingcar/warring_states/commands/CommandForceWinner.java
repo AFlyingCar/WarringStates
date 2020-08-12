@@ -5,7 +5,6 @@ import com.aflyingcar.warring_states.war.Conflict;
 import com.aflyingcar.warring_states.war.WarManager;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
@@ -49,12 +48,14 @@ public class CommandForceWinner extends CommandBase {
 
         Conflict.Side side = Conflict.Side.values()[sideID];
 
-        WarManager.getInstance().getAllConflicts().remove(conflictID);
-        WarManager.getInstance().markDirty();
-
         conflict.forceSetWinner(side);
 
         WarCompleteEvent event = new WarCompleteEvent(conflict);
         MinecraftForge.EVENT_BUS.post(event);
+
+        if(!event.isCanceled()) {
+            WarManager.getInstance().getAllConflicts().remove(conflictID);
+            WarManager.getInstance().markDirty();
+        }
     }
 }
