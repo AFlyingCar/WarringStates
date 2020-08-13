@@ -57,21 +57,42 @@ public final class WarManager extends BaseManager {
         return instance;
     }
 
+    /**
+     * Clears all rollback operations and marks the WarManager as dirty
+     * Meant for debugging purposes only! Not recommended to use
+     */
     public void clearRollbackOperations() {
         restorableBlockConflictMapping.clear();
         conflictModificationMapping.clear();
         markDirty();
     }
 
+    /**
+     * Saves a rollback operation for a change that has occurred in the world.
+     * @param block
+     * @param conflict
+     */
     public void saveChangeForRollback(RestorableBlock block, Conflict conflict) {
         ExtendedBlockPos blockPos = block.getPos();
+        int cindex = conflicts.indexOf(conflict);
+
+        // Do we already have a restoration operation at this position?
         if(restorableBlockConflictMapping.containsKey(blockPos)) {
             Pair<RestorableBlock, Integer> conflictPairing = restorableBlockConflictMapping.get(blockPos);
 
+            // First check if the type of restoration operation needs to change
             if(block.isReplacementOperation()) {
                 conflictPairing.getLeft().setPlacedBlock(block.getPlacedBlock());
             } else {
                 conflictPairing.getLeft().setPlacedBlock(null);
+            }
+
+            // Update count if this conflict is modifying this block for the first time
+            if(!conflictModificationMapping.containsKey(cindex) || !conflictModificationMapping.get(cindex).contains(blockPos)) {
+                conflictModificationMapping.putIfAbsent(cindex, new HashSet<>());
+                conflictModificationMapping.get(cindex).add(blockPos);
+                int numConflicts = conflictPairing.getValue();
+                restorableBlockConflictMapping.put(blockPos, Pair.of(conflictPairing.getLeft(), numConflicts + 1));
             }
 
             markDirty();
@@ -83,7 +104,6 @@ public final class WarManager extends BaseManager {
         int numConflicts = restorableBlockConflictMapping.get(blockPos).getValue();
         restorableBlockConflictMapping.put(blockPos, Pair.of(restorableBlock, numConflicts + 1));
 
-        int cindex = conflicts.indexOf(conflict);
         conflictModificationMapping.putIfAbsent(cindex, new HashSet<>());
         conflictModificationMapping.get(cindex).add(blockPos);
 
