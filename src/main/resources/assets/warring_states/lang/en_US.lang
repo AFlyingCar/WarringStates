@@ -35,9 +35,14 @@ warring_states.messages.player_has_been_kicked_by=%s has been kicked from %s by 
 warring_states.messages.move_capital.permission_denied=You do not have permission to move the capital of %s to here.
 warring_states.messages.move_capital.failure=Moving the capitol of %s here failed.
 warring_states.messages.move_capital.success=Moved the capitol of %s to %s.
+warring_states.messages.chunk_capture_beginning=A Claimer is being captured at %s!
+warring_states.messages.cannot_declare=Cannot declare a %s wargoal.
+warring_states.messages.belligerent_cannot_participate_in_war=You cannot declare war for another %l hours.
+warring_states.messages.target_cannot_participate_in_war=%s is protected for another %l hours.
 
 # Tooltips
 warring_states.tooltip.war_flight_disabled=A strange force prevents this from working properly.
+warring_states.tooltip.not_enough_experience=Not enough experience to claim this wargoal.
 
 # Gui Strings
 warring_states.gui.state.citizenship_apply=Are you sure you want to apply for citizenship with %s?
