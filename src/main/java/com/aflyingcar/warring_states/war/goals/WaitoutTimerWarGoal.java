@@ -4,6 +4,7 @@ import com.aflyingcar.warring_states.WarringStatesConfig;
 import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.war.Conflict;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -23,6 +24,12 @@ public class WaitoutTimerWarGoal implements IWarGoal {
 
     @Override
     public void onSuccess(State owner) { }
+
+    @Override
+    public boolean canBeDeclared(EntityPlayer declarer) {
+        // Cannot be declared by anybody, is given automatically
+        return false;
+    }
 
     @Override
     public NBTTagCompound writeNBT(NBTTagCompound nbt) {

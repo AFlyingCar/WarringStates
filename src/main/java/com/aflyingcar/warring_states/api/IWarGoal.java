@@ -3,6 +3,7 @@ package com.aflyingcar.warring_states.api;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.util.ISerializable;
 import com.aflyingcar.warring_states.war.Conflict;
+import net.minecraft.entity.player.EntityPlayer;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -30,4 +31,11 @@ public interface IWarGoal extends ISerializable {
      * @param owner The State which owns this wargoal
      */
     void onSuccess(State owner);
+
+    /**
+     * Checks if this wargoal can be declared by this person.
+     * @param declarer The player attempting to declare the war
+     * @return True if this wargoal can be declared, false otherwise.
+     */
+    boolean canBeDeclared(EntityPlayer declarer);
 }

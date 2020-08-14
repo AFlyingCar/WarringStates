@@ -1,5 +1,6 @@
 package com.aflyingcar.warring_states.war.goals;
 
+import com.aflyingcar.warring_states.WarringStatesConfig;
 import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.states.State;
@@ -7,15 +8,18 @@ import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
 import com.aflyingcar.warring_states.util.WorldUtils;
 import com.aflyingcar.warring_states.war.Conflict;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
+@ParametersAreNonnullByDefault
 public class StealChunkWarGoal implements IWarGoal {
     public final static float MAX_PROGRESS = 200; // 100% enemy + 100% ours
     public final static float TIME_FOR_PERCENT = 60; // TODO: 1% for every second?
@@ -49,12 +53,12 @@ public class StealChunkWarGoal implements IWarGoal {
     public void update(float dt) { }
 
     @Override
-    public boolean accomplished(@Nonnull Conflict war) {
+    public boolean accomplished(Conflict war) {
         return accomplished;
     }
 
     @Override
-    public void onSuccess(@Nonnull State owner) {
+    public void onSuccess(State owner) {
         State originalOwner = StateManager.getInstance().getStateAtPosition(chunk, dimension);
 
         if(originalOwner == null) {
@@ -78,6 +82,15 @@ public class StealChunkWarGoal implements IWarGoal {
                 claimers.get(0).changeOwner(owner);
             }
         }
+    }
+
+    public static boolean canWargoalBeDeclared(@Nullable EntityPlayer declarer) {
+        return declarer != null && declarer.experience >= WarringStatesConfig.minimumExperienceRequiredForStealingChunks;
+    }
+
+    @Override
+    public boolean canBeDeclared(EntityPlayer declarer) {
+        return canWargoalBeDeclared(declarer);
     }
 
     @Override
