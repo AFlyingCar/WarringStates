@@ -96,6 +96,8 @@ public class StateEventsHandler {
         }
 
         war.rollbackChanges();
+
+        WarManager.getInstance().startWarWaitTimers(war);
     }
 
     @SubscribeEvent
