@@ -1,11 +1,10 @@
 package com.aflyingcar.warring_states.handlers;
 
 import com.aflyingcar.warring_states.WarringStatesMod;
-import com.aflyingcar.warring_states.WarringStatesNetwork;
-import com.aflyingcar.warring_states.util.NetworkUtils;
-import net.minecraft.client.resources.I18n;
+import com.aflyingcar.warring_states.items.ItemWargoalClaimer;
+import com.aflyingcar.warring_states.util.GuiUtils;
+import com.aflyingcar.warring_states.war.goals.StealChunkWarGoal;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -17,9 +16,15 @@ public class ItemEventsHandler {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public static void onGetItemTooltip(ItemTooltipEvent event) {
-        /*
         EntityPlayer player = event.getEntityPlayer();
 
+        if(event.getItemStack().getItem() instanceof ItemWargoalClaimer) {
+            if(!StealChunkWarGoal.canWargoalBeDeclared(player)) {
+                event.getToolTip().add(GuiUtils.translate("warring_states.tooltip.not_enough_experience"));
+            }
+        }
+
+        /*
         TODO: This event is fired on the client-side only, but we need access to the WarManager, which only exists on the
               SERVER. Re-implement this later after we have an easy way to get simple data back down from the server
 
