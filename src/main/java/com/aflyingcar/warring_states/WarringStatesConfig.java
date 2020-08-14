@@ -77,4 +77,10 @@ public class WarringStatesConfig {
 
     @Config.Comment("Should problems be fixed during the startup sanity check. Does nothing if performTerritorySanityCheckOnStartup is false.")
     public static boolean shouldProblemsBeFixedDuringSanityCheck = true;
+
+    @Config.Comment("How long should should you have to wait in between war attempts.")
+    public static int numHoursBetweenWarAttempts = 48;
+
+    @Config.Comment("Minimum amount of experience required for declaring a steal chunk wargoal.")
+    public static float minimumExperienceRequiredForStealingChunks = 0;
 }

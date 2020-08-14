@@ -1,15 +1,14 @@
 package com.aflyingcar.warring_states.war;
 
+import com.aflyingcar.warring_states.WarringStatesConfig;
 import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.events.WarCompleteEvent;
 import com.aflyingcar.warring_states.events.WarDeclaredEvent;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
-import com.aflyingcar.warring_states.util.BaseManager;
-import com.aflyingcar.warring_states.util.ExtendedBlockPos;
-import com.aflyingcar.warring_states.util.NBTUtils;
-import com.aflyingcar.warring_states.util.RestorableBlock;
+import com.aflyingcar.warring_states.util.Timer;
+import com.aflyingcar.warring_states.util.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -41,6 +40,8 @@ public final class WarManager extends BaseManager {
     private Map<ExtendedBlockPos, Pair<RestorableBlock, Integer>> restorableBlockConflictMapping;
     private Map<Integer, Set<ExtendedBlockPos>> conflictModificationMapping;
 
+    private Map<UUID, Timer> warWaitTimers;
+
     private WarManager() {
         conflicts = new ArrayList<>();
         ignoreBlockBreakPredicate = new ArrayList<>();
@@ -48,6 +49,7 @@ public final class WarManager extends BaseManager {
 
         restorableBlockConflictMapping = new HashMap<>();
         conflictModificationMapping = new HashMap<>();
+        warWaitTimers = new HashMap<>();
     }
 
     public static WarManager getInstance() {
@@ -206,6 +208,17 @@ public final class WarManager extends BaseManager {
                 return Pair.of(conflictIdx, new HashSet<>(positions));
             });
         }
+
+        if(compound.hasKey("warWaitTimers")) {
+            warWaitTimers = NBTUtils.deserializeMap(compound.getTagList("warWaitTimers", 10), base -> {
+                UUID stateID = ((NBTTagCompound)base).getUniqueId("stateID");
+                NBTTagCompound nbtTimer = ((NBTTagCompound)base).getCompoundTag("timer");
+                Timer timer = new Timer();
+                timer.readNBT(nbtTimer);
+
+                return Pair.of(stateID, timer);
+            });
+        }
     }
 
     @Override
@@ -245,6 +258,15 @@ public final class WarManager extends BaseManager {
                 nbtPos.setInteger("dimID", pos.getDimID());
                 return nbtPos;
             }));
+
+            return nbtEntry;
+        }));
+
+        compound.setTag("warWaitTimers", NBTUtils.serializeMap(warWaitTimers, entry -> {
+            NBTTagCompound nbtEntry = new NBTTagCompound();
+
+            nbtEntry.setUniqueId("stateID", entry.getKey());
+            nbtEntry.setTag("timer", entry.getValue().writeNBT(new NBTTagCompound()));
 
             return nbtEntry;
         }));
@@ -321,6 +343,37 @@ public final class WarManager extends BaseManager {
      */
     public boolean isAtWarWith(State state1, State state2) {
         return getConflictBetween(state1, state2) != null;
+    }
+
+    public boolean canParticipateInWar(State state) {
+        Timer timer = warWaitTimers.getOrDefault(state.getUUID(), null);
+
+        if(timer == null || timer.getNumberOfHours() > WarringStatesConfig.numHoursBetweenWarAttempts) {
+            warWaitTimers.remove(state.getUUID());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public long getRemainingWarWaitTimerHoursFor(State state) {
+        Timer timer = warWaitTimers.getOrDefault(state.getUUID(), null);
+        return timer == null ? 0 : timer.getNumberOfHours();
+    }
+
+    public void startWarWaitTimerFor(State state) {
+        Timer timer;
+        warWaitTimers.put(state.getUUID(), timer = new Timer());
+        timer.start();
+    }
+
+    public void startWarWaitTimers(Conflict war) {
+        for(State state : war.getDefenders().keySet()) {
+            startWarWaitTimerFor(state);
+        }
+        for(State state : war.getBelligerents().keySet()) {
+            startWarWaitTimerFor(state);
+        }
     }
 
     @Override
