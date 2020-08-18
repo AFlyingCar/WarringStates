@@ -89,6 +89,9 @@ itemGroup.warring_states=Warring States
 
 # Items
 item.wargoal_claimer.name=Wargoal Claimer
+item.dormant_claimer.name=Dormant Claimer
+item.flag_base.name=Claimer Base
+item.flag_pole.name=Claimer Pole
 
 # Blocks
 tile.warring_states.claimer.name=Claimer
