@@ -16,6 +16,6 @@ public class CreativeTab extends CreativeTabs {
 
     @Override
     public ItemStack createIcon() {
-        return new ItemStack(WarringStatesItems.ITEM_CLAIMER_BLOCK);
+        return new ItemStack(WarringStatesItems.CLAIMER);
     }
 }
