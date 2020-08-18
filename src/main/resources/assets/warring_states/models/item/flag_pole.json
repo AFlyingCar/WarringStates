@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "warring_states:item/flag_pole"
+  }
+}
