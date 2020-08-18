@@ -2,7 +2,9 @@ package com.aflyingcar.warring_states.util;
 
 import com.aflyingcar.warring_states.WarringStatesBlocks;
 import com.aflyingcar.warring_states.states.DummyState;
+import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -14,6 +16,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -21,9 +24,6 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Predicate;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class WorldUtils {
     /**
@@ -167,6 +167,10 @@ public class WorldUtils {
 
     public static Chunk getChunkFor(ExtendedBlockPos position) {
         World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(position.getDimID());
+        return getChunkFor(world, position);
+    }
+
+    public static Chunk getChunkFor(World world, BlockPos position) {
         return world.getChunk(position);
     }
 
@@ -186,5 +190,27 @@ public class WorldUtils {
         world.notifyBlockUpdate(pos.south(), newState, newState, 2);
         world.notifyBlockUpdate(pos.east(), newState, newState, 2);
         world.notifyBlockUpdate(pos.west(), newState, newState, 2);
+    }
+
+    public static boolean areChunksAdjacent(ChunkPos chunk1, ChunkPos chunk2) {
+        int xdist = Math.abs(chunk1.x - chunk2.x);
+        int zdist = Math.abs(chunk1.z - chunk2.z);
+
+        return xdist == 1 && zdist == 1;
+    }
+
+    public static boolean doesChunkBorderWilderness(ChunkPos chunk, int dimension) {
+        return StateManager.getInstance().getStateAtPosition(new ChunkPos(chunk.x + 1, chunk.z), dimension) == null ||
+               StateManager.getInstance().getStateAtPosition(new ChunkPos(chunk.x - 1, chunk.z), dimension) == null ||
+               StateManager.getInstance().getStateAtPosition(new ChunkPos(chunk.x, chunk.z + 1), dimension) == null ||
+               StateManager.getInstance().getStateAtPosition(new ChunkPos(chunk.x, chunk.z - 1), dimension) == null;
+    }
+
+    public static boolean doesChunkBorderState(ChunkPos chunk, int dimension) {
+        return StateManager.getInstance().getStateAtPosition(new ChunkPos(chunk.x + 1, chunk.z), dimension) != null ||
+               StateManager.getInstance().getStateAtPosition(new ChunkPos(chunk.x - 1, chunk.z), dimension) != null ||
+               StateManager.getInstance().getStateAtPosition(new ChunkPos(chunk.x, chunk.z + 1), dimension) != null ||
+               StateManager.getInstance().getStateAtPosition(new ChunkPos(chunk.x, chunk.z - 1), dimension) != null;
+
     }
 }
