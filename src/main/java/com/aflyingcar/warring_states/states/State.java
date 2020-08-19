@@ -536,7 +536,10 @@ public class State implements ISerializable {
                         WarringStatesMod.getLogger().warn("Destroying all but the first which belong to us!");
                         boolean found = false;
                         for(TileEntityClaimer claimer : claimers) {
-                            if(claimer.getStateUUID().equals(getUUID())) {
+                            if(claimer.getStateUUID() == null) {
+                                //noinspection ResultOfMethodCallIgnored
+                                WorldUtils.destroyClaimer(new ExtendedBlockPos(claimer.getPos(), claimed.getDimension()));
+                            } else if(claimer.getStateUUID().equals(getUUID())) {
                                 if(found) {
                                     //noinspection ResultOfMethodCallIgnored
                                     WorldUtils.destroyClaimer(new ExtendedBlockPos(claimer.getPos(), claimed.getDimension()));
@@ -554,6 +557,8 @@ public class State implements ISerializable {
                         toUnclaim.add(Pair.of(chunkPos, claimed.getDimension()));
                     }
                     ++problems;
+                } else { // Only 1 claimer, but let's perform a sanity check on it as well
+                    problems += claimers.get(0).performSanityCheck(fixProblems);
                 }
             }
         }
