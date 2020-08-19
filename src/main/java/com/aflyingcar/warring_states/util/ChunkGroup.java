@@ -1,7 +1,6 @@
 package com.aflyingcar.warring_states.util;
 
 import com.aflyingcar.warring_states.WarringStatesMod;
-import com.aflyingcar.warring_states.util.ISerializable;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -45,8 +44,7 @@ public class ChunkGroup implements ISerializable {
      * @return {@code true} if pos is nearby, {@code false} otherwise.
      */
     public boolean isChunkNearby(ChunkPos pos) {
-        // TODO: How do we properly implement this??
-        return false;
+        return chunks.parallelStream().anyMatch(c -> WorldUtils.areChunksAdjacent(c, pos));
     }
 
     @Override

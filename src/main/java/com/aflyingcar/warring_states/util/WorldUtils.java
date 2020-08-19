@@ -1,6 +1,7 @@
 package com.aflyingcar.warring_states.util;
 
 import com.aflyingcar.warring_states.WarringStatesBlocks;
+import com.aflyingcar.warring_states.blocks.BlockClaimer;
 import com.aflyingcar.warring_states.states.DummyState;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
@@ -159,6 +160,12 @@ public class WorldUtils {
 
         world.setBlockToAir(position);
 
+        // Make sure that there is actually a _top_ part before we break it
+        IBlockState top = world.getBlockState(position.up());
+        if(top.getBlock() instanceof BlockClaimer && top.getValue(BlockClaimer.HALF) == BlockClaimer.ClaimerHalf.TOP) {
+            world.setBlockToAir(position.up());
+        }
+
         // Spawn an entityItem in the world to represent the now-destroyed claimer
         WarringStatesBlocks.BLOCK_CLAIMER.dropBlockAsItem(world, position, WarringStatesBlocks.BLOCK_CLAIMER.getDefaultState(), 0);
 
@@ -196,7 +203,7 @@ public class WorldUtils {
         int xdist = Math.abs(chunk1.x - chunk2.x);
         int zdist = Math.abs(chunk1.z - chunk2.z);
 
-        return xdist == 1 && zdist == 1;
+        return xdist <= 1 && zdist <= 1;
     }
 
     public static boolean doesChunkBorderWilderness(ChunkPos chunk, int dimension) {
