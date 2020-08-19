@@ -100,6 +100,16 @@ public class WarringStatesAPI {
             return;
         }
 
+        if(!WarManager.getInstance().canParticipateInWar(belligerent)) {
+            player.sendMessage(new TextComponentTranslation("warring_states.messages.belligerent_cannot_participate_in_war", WarManager.getInstance().getRemainingWarWaitTimerHoursFor(belligerent)));
+            return;
+        }
+
+        if(!WarManager.getInstance().canParticipateInWar(target)) {
+            player.sendMessage(new TextComponentTranslation("warring_states.messages.target_cannot_participate_in_war", target.getName(), WarManager.getInstance().getRemainingWarWaitTimerHoursFor(target)));
+            return;
+        }
+
         // Sanity check: players who are not a citizen of belligerent cannot declare war for belligerent
         if(!belligerent.hasCitizen(player.getPersistentID())) {
             WarringStatesMod.getLogger().error("Tried to declare war between '" + belligerent.getName() + "' and '" + target.getName() + "', but player " + player.getName() + " is not a citizen of the belligerent.");
@@ -144,6 +154,11 @@ public class WarringStatesAPI {
 
         goal.setChunk(chunkPos);
         goal.setDimension(dimension);
+
+        if(!goal.canBeDeclared(player)) {
+            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_declare", "Steal Chunk"));
+            return;
+        }
 
         // Allow the wargoal event to be explicitly intercepted and cancelled if necessary
         if(!MinecraftForge.EVENT_BUS.post(new WargoalDeclaredEvent(goal))) {
