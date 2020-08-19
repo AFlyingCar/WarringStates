@@ -281,7 +281,7 @@ public class ProtectionHandler {
         }
 
         // You can interact with the claimer regardless of privilege, and we will let it determine what you can do with it
-        if(event.getWorld().getTileEntity(event.getPos()) instanceof TileEntityClaimer) {
+        if(event.getWorld().getBlockState(event.getPos()).getBlock() instanceof BlockClaimer) {
             return;
         }
 

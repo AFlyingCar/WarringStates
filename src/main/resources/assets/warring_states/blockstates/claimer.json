@@ -5,6 +5,16 @@
       {
         "model": "warring_states:claimer"
       }
+    ],
+    "half=top": [
+      {
+        "model": "warring_states:claimer"
+      }
+    ],
+    "half=bottom": [
+      {
+        "model": "warring_states:claimer"
+      }
     ]
   }
 }
