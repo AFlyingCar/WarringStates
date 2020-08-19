@@ -1,0 +1,22 @@
+{
+  "result": {
+    "item": "warring_states:flag_base",
+    "data": 0,
+    "count": 1
+  },
+  "pattern": [
+    "sss",
+    "ccc"
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "c": {
+      "item": "minecraft:cobblestone",
+      "data": 0
+    },
+    "s": {
+      "item": "minecraft:stone_slab",
+      "data": 3
+    }
+  }
+}

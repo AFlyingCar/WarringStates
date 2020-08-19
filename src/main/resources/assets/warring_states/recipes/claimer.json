@@ -1,0 +1,27 @@
+{
+  "result": {
+    "item": "warring_states:claimer",
+    "data": 0,
+    "count": 1
+  },
+  "pattern": [
+    "pff",
+    "pff",
+    "b  "
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "p": {
+      "item": "warring_states:flag_pole",
+      "data": 0
+    },
+    "b": {
+      "item": "warring_states:flag_base",
+      "data": 0
+    },
+    "f": {
+      "item": "minecraft:paper",
+      "data": 0
+    }
+  }
+}

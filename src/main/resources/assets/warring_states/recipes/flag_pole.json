@@ -1,0 +1,19 @@
+{
+  "result": {
+    "item": "warring_states:flag_pole",
+    "data": 0,
+    "count": 1
+  },
+  "pattern": [
+    "  s",
+    " s ",
+    "s  "
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "s": {
+      "item": "minecraft:stick",
+      "data": 0
+    }
+  }
+}
