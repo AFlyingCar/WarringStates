@@ -3,6 +3,8 @@ package com.aflyingcar.warring_states;
 import com.aflyingcar.warring_states.blocks.BlockClaimer;
 import com.aflyingcar.warring_states.common.CommonProxy;
 import com.aflyingcar.warring_states.handlers.GuiHandler;
+import com.aflyingcar.warring_states.items.ItemFlagBase;
+import com.aflyingcar.warring_states.items.ItemFlagPole;
 import com.aflyingcar.warring_states.items.ItemWargoalClaimer;
 import com.aflyingcar.warring_states.network.handlers.client.*;
 import com.aflyingcar.warring_states.network.handlers.server.*;
@@ -12,14 +14,17 @@ import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
 import com.aflyingcar.warring_states.war.WarManager;
 import net.minecraft.block.Block;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -31,7 +36,6 @@ import org.apache.logging.log4j.Logger;
         version = WarringStatesMod.VERSION
 )
 public class WarringStatesMod {
-
     public static final String MOD_ID = "warring_states";
     public static final String MOD_NAME = "Warring States";
     public static final String VERSION = "1.0.0";
@@ -160,17 +164,6 @@ public class WarringStatesMod {
     }
 
     /**
-     * Forge will automatically look up and bind items to the fields in this class
-     * based on their registry name.
-     */
-    @SuppressWarnings("unused")
-    @GameRegistry.ObjectHolder(MOD_ID)
-    public static class Items {
-        public static final ItemBlock ITEM_BLOCK_CLAIMER = null; // itemblock for the block above
-        public static final Item ITEM_WARGOAL_CLAIMER = null;
-    }
-
-    /**
      * This is a special class that listens to registry events, to allow creation of mod blocks and items at the proper time.
      */
     @Mod.EventBusSubscriber
@@ -182,6 +175,8 @@ public class WarringStatesMod {
         public static void addItems(RegistryEvent.Register<Item> event) {
             event.getRegistry().register(new ItemBlock(WarringStatesBlocks.BLOCK_CLAIMER).setRegistryName(MOD_ID, BlockClaimer.NAME));
             event.getRegistry().register(new ItemWargoalClaimer());
+            event.getRegistry().register(new ItemFlagBase());
+            event.getRegistry().register(new ItemFlagPole());
         }
 
         /**
@@ -190,6 +185,12 @@ public class WarringStatesMod {
         @SubscribeEvent
         public static void addBlocks(RegistryEvent.Register<Block> event) {
              event.getRegistry().register(WarringStatesBlocks.BLOCK_CLAIMER);
+        }
+
+        @SubscribeEvent
+        public static void addModels(ModelRegistryEvent event) {
+            ModelLoader.setCustomModelResourceLocation(WarringStatesItems.FLAG_POLE, 0, new ModelResourceLocation(WarringStatesItems.FLAG_POLE.getRegistryName(), "inventory"));
+            ModelLoader.setCustomModelResourceLocation(WarringStatesItems.WARGOAL_CLAIMER, 0, new ModelResourceLocation(WarringStatesItems.WARGOAL_CLAIMER.getRegistryName(), "inventory"));
         }
     }
 }
