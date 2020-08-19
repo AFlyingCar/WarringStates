@@ -1,5 +1,6 @@
 package com.aflyingcar.warring_states.tileentities;
 
+import com.aflyingcar.warring_states.WarringStatesBlocks;
 import com.aflyingcar.warring_states.WarringStatesConfig;
 import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.api.CitizenPrivileges;
@@ -43,7 +44,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @MethodsReturnNonnullByDefault
@@ -555,5 +558,53 @@ public class TileEntityClaimer extends TileEntity implements IInventory, ITickab
     @Override
     public boolean canReceive() {
         return false;
+    }
+
+    /**
+     * Performs a sanity check on this particular block+tile entity location
+     *
+     * @param fixProblems Whether or not problems should be fixed when encountered
+     *
+     * @return Number of problems detected and fixed
+     */
+    public int performSanityCheck(boolean fixProblems) {
+        IBlockState state = world.getBlockState(pos);
+        IBlockState state2 = world.getBlockState(pos.up());
+
+        int problems = 0;
+        boolean topIsNotClaimer = false;
+
+        // Nothing we can do about this one, kill it anyway
+        if(!(state.getBlock() instanceof BlockClaimer)) {
+            return 0;
+        }
+
+        // Tile Entity must _always_ be the bottom part of the block
+        if(state.getValue(BlockClaimer.HALF) == BlockClaimer.ClaimerHalf.TOP) {
+            if(fixProblems) {
+                world.setBlockState(pos, WarringStatesBlocks.BLOCK_CLAIMER.getDefaultState().withProperty(BlockClaimer.HALF, BlockClaimer.ClaimerHalf.BOTTOM));
+            }
+            ++problems;
+        }
+
+        if(!(state2.getBlock() instanceof BlockClaimer)) {
+            topIsNotClaimer = true;
+            if(fixProblems) {
+                // Break the upper block if it's not a top-claimer
+                state2.getBlock().dropBlockAsItem(world, pos.up(), state2, 0);
+                world.setBlockToAir(pos.up());
+            }
+            ++problems;
+        }
+
+        // Top block must _always_ be the top part of the block
+        if(topIsNotClaimer || state2.getValue(BlockClaimer.HALF) != BlockClaimer.ClaimerHalf.TOP) {
+            if(fixProblems) {
+                world.setBlockState(pos.up(), WarringStatesBlocks.BLOCK_CLAIMER.getDefaultState().withProperty(BlockClaimer.HALF, BlockClaimer.ClaimerHalf.TOP));
+            }
+            ++problems;
+        }
+
+        return problems;
     }
 }
