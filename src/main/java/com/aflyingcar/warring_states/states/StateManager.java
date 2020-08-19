@@ -223,5 +223,6 @@ public final class StateManager extends BaseManager {
 
     public void removeState(State state) {
         states.remove(state);
+        markDirty();
     }
 }
