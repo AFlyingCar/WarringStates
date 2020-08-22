@@ -6,7 +6,9 @@ import com.aflyingcar.warring_states.util.TrackedMessage;
 import io.netty.buffer.ByteBuf;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class DeliverStateCitizenListMessage extends TrackedMessage {
@@ -29,7 +31,7 @@ public class DeliverStateCitizenListMessage extends TrackedMessage {
     public void toBytes(ByteBuf buf) {
         super.toBytes(buf);
 
-        NetworkUtils.writeList(buf, citizenList, (byteBuf, dummyCitizen) -> {
+        NetworkUtils.writeCollection(buf, citizenList, (byteBuf, dummyCitizen) -> {
             NetworkUtils.writeUUID(byteBuf, dummyCitizen.getCitizenID());
             byteBuf.writeInt(dummyCitizen.getPrivileges());
             NetworkUtils.writeString(byteBuf, dummyCitizen.getName());

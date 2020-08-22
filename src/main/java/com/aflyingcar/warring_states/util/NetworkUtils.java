@@ -5,6 +5,7 @@ import com.aflyingcar.warring_states.WarringStatesNetwork;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.IThreadListener;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -60,15 +61,15 @@ public class NetworkUtils {
     }
 
     /**
-     * Writes a List to the given ByteBuf.
+     * Writes a Collection to the given ByteBuf.
      * @param buf The ByteBuf to write to.
-     * @param list The List to write
+     * @param collection The List to write
      * @param writer A function which knows how to write a T to a ByteBuf
-     * @param <T> The type contained in the list
+     * @param <T> The type contained in the collection
      */
-    public static <T> void writeList(@Nonnull ByteBuf buf, @Nonnull List<T> list, @Nonnull BiConsumer<ByteBuf, T> writer) {
-        buf.writeInt(list.size());
-        list.forEach(t -> writer.accept(buf, t));
+    public static <T> void writeCollection(@Nonnull ByteBuf buf, @Nonnull Collection<T> collection, @Nonnull BiConsumer<ByteBuf, T> writer) {
+        buf.writeInt(collection.size());
+        collection.forEach(t -> writer.accept(buf, t));
     }
 
     /**
@@ -82,6 +83,19 @@ public class NetworkUtils {
         int size = buf.readInt();
 
         return IntStream.range(0, size).mapToObj(i -> reader.apply(buf)).collect(Collectors.toList());
+    }
+
+    /**
+     * Reads a Set from the given ByteBuf. Assumes that said set had been previously written with {@code writeList}
+     * @param buf The ByteBuf to read from.
+     * @param reader A function which knows how to read a T from a ByteBuf
+     * @param <T> The type contained in the set
+     * @return A new List of all elements read from ByteBuf
+     */
+    public static <T> Set<T> readSet(@Nonnull ByteBuf buf, @Nonnull Function<ByteBuf, T> reader) {
+        int size = buf.readInt();
+
+        return IntStream.range(0, size).mapToObj(i -> reader.apply(buf)).collect(Collectors.toSet());
     }
 
     /**
@@ -165,6 +179,37 @@ public class NetworkUtils {
 
             consumer.accept(message);
         });
+    }
+
+    public static void writeTimer(ByteBuf buf, Timer decayTimer) {
+        buf.writeLong(decayTimer.getCurrentTick());
+        buf.writeBoolean(decayTimer.hasStarted());
+    }
+
+    public static Timer readTimer(ByteBuf buf) {
+        return new Timer(buf.readLong(), buf.readBoolean());
+    }
+
+    public static void writeChunkPos(ByteBuf buf, ChunkPos pos) {
+        buf.writeInt(pos.x);
+        buf.writeInt(pos.z);
+    }
+
+    public static ChunkPos readChunkPos(ByteBuf buf) {
+        return new ChunkPos(buf.readInt(), buf.readInt());
+    }
+
+    public static void writeChunkGroup(ByteBuf buf, ChunkGroup group) {
+        buf.writeInt(group.getDimension());
+        writeCollection(buf, group.getChunks(), NetworkUtils::writeChunkPos);
+    }
+
+    public static ChunkGroup readChunkGroup(ByteBuf buf) {
+        ChunkGroup group = new ChunkGroup(buf.readInt());
+
+        group.getChunks().addAll(NetworkUtils.readSet(buf, NetworkUtils::readChunkPos));
+
+        return group;
     }
 }
 
