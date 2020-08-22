@@ -150,7 +150,16 @@ public class WorldUtils {
     @CheckReturnValue
     public static boolean destroyClaimer(ExtendedBlockPos position) {
         World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(position.getDimID());
+        return destroyClaimer(world, position);
+    }
 
+    /**
+     * Destroys a TileEntityClaimer
+     * @param world The world the claimer exists in
+     * @param position The position of the claimer
+     * @return true if the claimer was destroyed, false otherwise
+     */
+    public static boolean destroyClaimer(World world, BlockPos position) {
         if(!(world.getTileEntity(position) instanceof TileEntityClaimer)) {
             return false;
         }
