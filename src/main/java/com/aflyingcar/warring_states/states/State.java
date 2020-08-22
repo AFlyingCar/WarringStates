@@ -528,14 +528,17 @@ public class State implements ISerializable {
         WarringStatesMod.proxy.markStateManagerDirty();
     }
 
+    @Nonnull
     public Map<UUID, Integer> getCitizensWithPrivileges() {
         return citizens;
     }
 
+    @Nonnull
     public Set<UUID> getWargoalTargets() {
         return wargoals.keySet();
     }
 
+    @Nonnull
     public Map<UUID, Set<IWarGoal>> getWargoals() {
         return wargoals;
     }
