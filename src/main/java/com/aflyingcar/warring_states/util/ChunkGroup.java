@@ -96,4 +96,8 @@ public class ChunkGroup implements ISerializable {
     public boolean containsChunk(ChunkPos chunkPos, int dimension) {
         return (this.dimension == dimension) && chunks.contains(chunkPos);
     }
+
+    public boolean containsBlock(ExtendedBlockPos pos) {
+        return (dimension == pos.getDimID()) && chunks.parallelStream().anyMatch(cpos -> WorldUtils.isBlockWithinChunk(cpos, pos));
+    }
 }
