@@ -25,30 +25,17 @@ public class DeliverConflictListMessage extends TrackedMessage {
         super.fromBytes(buf);
 
         conflicts = NetworkUtils.readList(buf,
-                byteBuf -> new DummyConflict(NetworkUtils.readMap(byteBuf, byteBuf2 ->
-                    new DummyState(NetworkUtils.readUUID(byteBuf2), NetworkUtils.readString(byteBuf2), NetworkUtils.readString(byteBuf2)),
-                    ByteBuf::readInt
-                ), NetworkUtils.readMap(byteBuf, byteBuf2 ->
-                    new DummyState(NetworkUtils.readUUID(byteBuf2), NetworkUtils.readString(byteBuf2), NetworkUtils.readString(byteBuf2)),
-                    ByteBuf::readInt
-                )));
+                byteBuf -> new DummyConflict(NetworkUtils.readMap(byteBuf, DummyState::readStateData, ByteBuf::readInt),
+                                             NetworkUtils.readMap(byteBuf, DummyState::readStateData, ByteBuf::readInt)));
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         super.toBytes(buf);
 
-        NetworkUtils.writeList(buf, conflicts, (byteBuf, conflict) -> {
-            NetworkUtils.writeMap(buf, conflict.getBelligerents(), (byteBuf2, state) -> {
-                NetworkUtils.writeUUID(byteBuf2, state.getUUID());
-                NetworkUtils.writeString(byteBuf2, state.getName());
-                NetworkUtils.writeString(byteBuf2, state.getDesc());
-            }, ByteBuf::writeInt);
-            NetworkUtils.writeMap(buf, conflict.getDefenders(), (byteBuf2, state) -> {
-                NetworkUtils.writeUUID(byteBuf2, state.getUUID());
-                NetworkUtils.writeString(byteBuf2, state.getName());
-                NetworkUtils.writeString(byteBuf2, state.getDesc());
-            }, ByteBuf::writeInt);
+        NetworkUtils.writeCollection(buf, conflicts, (byteBuf, conflict) -> {
+            NetworkUtils.writeMap(buf, conflict.getBelligerents(), (byteBuf2, state) -> DummyState.writeStateData(state, byteBuf2), ByteBuf::writeInt);
+            NetworkUtils.writeMap(buf, conflict.getDefenders(), (byteBuf2, state) -> DummyState.writeStateData(state, byteBuf2), ByteBuf::writeInt);
         });
     }
 

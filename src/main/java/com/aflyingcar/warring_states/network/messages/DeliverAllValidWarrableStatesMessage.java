@@ -33,18 +33,14 @@ public class DeliverAllValidWarrableStatesMessage extends TrackedMessage {
     public void fromBytes(ByteBuf buf) {
         super.fromBytes(buf);
 
-        wargoals = NetworkUtils.readMap(buf, byteBuf -> new DummyState(NetworkUtils.readUUID(byteBuf), NetworkUtils.readString(byteBuf), NetworkUtils.readString(byteBuf)), ByteBuf::readInt);
+        wargoals = NetworkUtils.readMap(buf, DummyState::readStateData, ByteBuf::readInt);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         super.toBytes(buf);
 
-        NetworkUtils.writeMap(buf, wargoals, (byteBuf, dummyState) -> {
-            NetworkUtils.writeUUID(byteBuf, dummyState.getUUID());
-            NetworkUtils.writeString(byteBuf, dummyState.getName());
-            NetworkUtils.writeString(byteBuf, dummyState.getDesc());
-        }, ByteBuf::writeInt);
+        NetworkUtils.writeMap(buf, wargoals, (byteBuf, dummyState) -> dummyState.writeData(byteBuf), ByteBuf::writeInt);
     }
 
     public Map<DummyState, Integer> getWargoals() {
