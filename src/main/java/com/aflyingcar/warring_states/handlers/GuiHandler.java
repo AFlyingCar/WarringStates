@@ -2,7 +2,7 @@ package com.aflyingcar.warring_states.handlers;
 
 import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.WarringStatesNetwork;
-import com.aflyingcar.warring_states.client.gui.*;
+import com.aflyingcar.warring_states.client.gui.GuiID;
 import com.aflyingcar.warring_states.client.gui.screens.ConfirmApplyForCitizenshipGui;
 import com.aflyingcar.warring_states.client.gui.screens.DiplomacyGui;
 import com.aflyingcar.warring_states.client.gui.screens.StateCreationGui;
@@ -48,7 +48,7 @@ public class GuiHandler implements IGuiHandler {
                 return new StateManagementGui(dummyState, player, pos);
             case CONFIRM_APPLY_CITIZENSHIP:
                 if(dummyState == null) {
-                    WarringStatesMod.getLogger().warn("Cannot open Management GUI at " + pos + ", as we were unable to find any State information there.");
+                    WarringStatesMod.getLogger().warn("Cannot open Application GUI at " + pos + ", as we were unable to find any State information there.");
                     return null;
                 }
                 return new ConfirmApplyForCitizenshipGui(dummyState.getName(), dummyState.getUUID(), player);
