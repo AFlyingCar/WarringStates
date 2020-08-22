@@ -33,6 +33,18 @@ public class ItemWargoalClaimer extends Item {
         setRegistryName(WarringStatesMod.MOD_ID, TRANSLATION_KEY);
     }
 
+    private boolean claimStealChunkWargoal(EntityPlayer player, State playerState, World world) {
+        State owningState = StateManager.getInstance().getStateAtPosition(world, player.getPosition());
+        if(owningState == null) {
+            return false;
+        }
+
+        ChunkPos chunkPos = world.getChunk(player.getPosition()).getPos();
+        WarringStatesAPI.claimStealChunkWargoal(player, playerState, owningState, chunkPos, WorldUtils.getDimensionIDForWorld((WorldServer)world));
+
+        return true;
+    }
+
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
         // Only do this action on the server
@@ -43,14 +55,12 @@ public class ItemWargoalClaimer extends Item {
                 return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(handIn));
             }
 
-            State owningState = StateManager.getInstance().getStateAtPosition(worldIn, playerIn.getPosition());
-            if(owningState == null) {
+            if(!claimStealChunkWargoal(playerIn, playerState, worldIn)) {
                 playerIn.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_steal_from_nobody"));
                 return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(handIn));
+            } else {
+                return new ActionResult<>(EnumActionResult.SUCCESS, playerIn.getHeldItem(handIn));
             }
-
-            ChunkPos chunkPos = worldIn.getChunk(playerIn.getPosition()).getPos();
-            WarringStatesAPI.claimStealChunkWargoal(playerIn, playerState, owningState, chunkPos, WorldUtils.getDimensionIDForWorld((WorldServer)worldIn));
         }
 
         return super.onItemRightClick(worldIn, playerIn, handIn);
