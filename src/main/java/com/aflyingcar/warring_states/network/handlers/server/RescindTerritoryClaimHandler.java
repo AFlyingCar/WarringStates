@@ -34,9 +34,10 @@ public class RescindTerritoryClaimHandler implements IMessageHandler<RescindTerr
                 return;
             }
 
+            EntityPlayer player = PlayerUtils.getPlayerByUUID(requestingPlayerID);
+
             // Make sure nobody is being naughty
             if(!state.hasPrivilege(requestingPlayerID, CitizenPrivileges.CLAIM_TERRITORY)) {
-                EntityPlayer player = PlayerUtils.getPlayerByUUID(requestingPlayerID);
                 if(player != null)
                     player.sendMessage(new TextComponentTranslation("warring_states.messages.rescind_claim.permission_denied", state.getName()));
                 WarringStatesMod.getLogger().warn("Got a rescind territory request from player UUID " + requestingPlayerID + ", but they do not have such permissions! This should never have been able to happen legit.");
@@ -45,7 +46,10 @@ public class RescindTerritoryClaimHandler implements IMessageHandler<RescindTerr
 
             World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(pos.getDimID());
 
-            state.unclaimTerritory(world.getChunk(pos).getPos(), pos.getDimID());
+            if(!state.unclaimTerritory(world.getChunk(pos).getPos(), pos.getDimID())) {
+                if(player != null)
+                    player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_rescind_capitol"));
+            }
 
             if(!WorldUtils.destroyClaimer(pos)) {
                 WarringStatesMod.getLogger().warn("No TileEntityClaimer found at position " + pos);
