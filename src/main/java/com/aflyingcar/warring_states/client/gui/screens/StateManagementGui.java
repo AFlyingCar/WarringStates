@@ -4,22 +4,19 @@ import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.WarringStatesNetwork;
 import com.aflyingcar.warring_states.api.CitizenPrivileges;
 import com.aflyingcar.warring_states.network.messages.*;
-import com.aflyingcar.warring_states.states.State;
+import com.aflyingcar.warring_states.states.DummyState;
+import com.aflyingcar.warring_states.util.ChunkGroup;
 import com.aflyingcar.warring_states.util.ExtendedBlockPos;
 import com.aflyingcar.warring_states.util.GuiUtils;
 import com.aflyingcar.warring_states.util.NetworkUtils;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.util.UUID;
 
 public class StateManagementGui extends GuiScreen {
-    private final UUID stateID;
-    private String currentName;
-    private String currentDesc;
     private final EntityPlayer player;
     private final int playerPrivileges;
     private final ExtendedBlockPos pos; // The position of the TileEntity that is being interacted with
@@ -29,6 +26,12 @@ public class StateManagementGui extends GuiScreen {
 
     private int posX = 0;
     private int posY = 0;
+
+    private DummyState state;
+
+    private boolean isMoveCapitolEnabled;
+    private boolean initialized = false;
+    private boolean receivedFullStateInfo = false;
 
     private enum ButtonID {
         REVOKE_CITIZENSHIP,
@@ -87,14 +90,46 @@ public class StateManagementGui extends GuiScreen {
         }
     }
 
-    public StateManagementGui(State state, EntityPlayer player, ExtendedBlockPos pos) {
-        this.stateID = state.getUUID();
-        this.currentName = state.getName();
-        this.currentDesc = state.getDesc();
+    private void disableButton(GuiButton button) {
+        button.enabled = false;
+        button.packedFGColour = 0;
+    }
+
+    private void enableButton(GuiButton button) {
+        button.enabled = true;
+        button.packedFGColour = 14737632; // TODO
+    }
+
+    private void changeMoveCapitolEnabled(boolean enabled) {
+        isMoveCapitolEnabled = enabled;
+
+        if(!initialized) return;
+
+        if(enabled) {
+            enableButton(buttonList.get(ButtonID.MOVE_CAPITAL.ordinal()));
+        } else {
+            disableButton(buttonList.get(ButtonID.MOVE_CAPITAL.ordinal()));
+        }
+    }
+
+    public StateManagementGui(DummyState state, EntityPlayer player, ExtendedBlockPos pos) {
+        this.state = state;
         this.pos = pos;
         this.playerPrivileges = WarringStatesMod.proxy.getPrivilegesFor(player.getPersistentID());
 
+        NetworkUtils.sendTrackedMessage(new RequestFullStateInformationMessage(state.getUUID()), (message) -> {
+            this.state = ((DeliverFullStateInformationMessage)message).getState();
+            ChunkGroup capitol = this.state.getCapital();
+            changeMoveCapitolEnabled((capitol == null) || !capitol.containsBlock(pos));
+
+            this.receivedFullStateInfo = true;
+        });
+
         this.player = player;
+    }
+
+    protected boolean playerHasPrivilegesForButton(ButtonID buttonID) {
+        return (playerPrivileges & buttonID.getPrivilegeMask()) == buttonID.getPrivilegeMask();
     }
 
     @Override
@@ -110,11 +145,10 @@ public class StateManagementGui extends GuiScreen {
             if(newWidth > largestWidth)
                 largestWidth = newWidth;
 
-            GuiButton button = addButton(new GuiButton(buttonID.ordinal(), 0, 0, 0, 20, buttonID.translate(currentName)));
+            GuiButton button = addButton(new GuiButton(buttonID.ordinal(), 0, 0, 0, 20, buttonID.translate(state.getName())));
             // Does this person not have sufficient privileges to access this feature
-            if((playerPrivileges & buttonID.getPrivilegeMask()) != buttonID.getPrivilegeMask()) {
-                button.enabled = false;
-                button.packedFGColour = 0;
+            if(!playerHasPrivilegesForButton(buttonID)) {
+                disableButton(button);
             }
         }
 
@@ -141,10 +175,24 @@ public class StateManagementGui extends GuiScreen {
         dissolveButton.width = largestWidth;
         dissolveButton.x = posX * 2;// - (largestWidth  / 2);
         dissolveButton.y = posY + (left ? 0 : 20 + GuiUtils.DEFAULT_TEXT_BUFFER_SIZE);
+
+        // Only color it RED if the player has privileges for this action
+        if(playerHasPrivilegesForButton(ButtonID.DISSOLVE_STATE))
+            dissolveButton.packedFGColour = 0xFF0000;
+
+        // Special case here in case the state information gets back to us before we finish properly initializing
+        if(!isMoveCapitolEnabled) {
+            disableButton(buttonList.get(ButtonID.MOVE_CAPITAL.ordinal()));
+        }
+
+        initialized = true;
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        // Don't draw anything at all if we have yet to receive all of the state information
+        if(!receivedFullStateInfo) return;
+
         // Draws slightly darkened background
         drawDefaultBackground();
 
@@ -157,11 +205,63 @@ public class StateManagementGui extends GuiScreen {
         // TODO: Draw GUI window
         drawTexturedModalRect(posX, posY, 0, 0, textureWidth, textureHeight);
 
-        drawString(fontRenderer, GuiUtils.translate("management_title", currentName), posX, posY, 0xFFFFFF);
-        drawString(fontRenderer, currentDesc, posX, posY + 20 + GuiUtils.DEFAULT_TEXT_BUFFER_SIZE, 0xFFFFFF);
+        drawString(fontRenderer, GuiUtils.translate("management_title", state.getName()), posX, posY, 0xFFFFFF);
+        drawString(fontRenderer, state.getDesc(), posX, posY + 20 + GuiUtils.DEFAULT_TEXT_BUFFER_SIZE, 0xFFFFFF);
 
         // Draw buttons and stuff
         super.drawScreen(mouseX, mouseY, partialTicks);
+
+        drawTooltips(mouseX, mouseY);
+    }
+
+    protected void drawTooltips(int mouseX, int mouseY) {
+        String text = getButtonTooltipText(getCurrentHoveredButton());
+
+        if(text != null) {
+            drawHoveringText(text, mouseX, mouseY);
+        }
+    }
+
+    @Nullable
+    protected String getButtonTooltipText(@Nullable ButtonID buttonID) {
+        if(buttonID == null) return null;
+
+        if(!playerHasPrivilegesForButton(buttonID)) {
+            return I18n.format("warring_states.tooltip.not_enough_privileges", CitizenPrivileges.toString(buttonID.getPrivilegeMask()));
+        }
+
+        switch(buttonID) {
+            case MOVE_CAPITAL:
+                if(!isMoveCapitolEnabled)
+                    return I18n.format("warring_states.tooltip.move_capital_not_available");
+            case DISSOLVE_STATE:
+                // TODO: This text should be colored red
+                return I18n.format("warring_states.tooltip.dissolve_cannot_be_undone");
+            case MANAGE_APPLICATIONS:
+                return I18n.format("warring_states.tooltip.manage_applications", "" + state.getAllApplications().size());
+            case REVOKE_CITIZENSHIP:
+                return I18n.format("warring_states.tooltip.revoke_citizenship");
+            case MANAGE_CITIZENS:
+            case RESCIND_CLAIM:
+            case DECLARE_WAR:
+            case CHANGE_NAME:
+            case CHANGE_DESC:
+            case VIEW_CURRENT_CONFLICTS:
+            default:
+                return null;
+        }
+    }
+
+    @Nullable
+    protected ButtonID getCurrentHoveredButton() {
+        for(int i = 0; i < buttonList.size(); ++i) {
+            GuiButton button = buttonList.get(i);
+            if(button.visible && button.isMouseOver()) {
+                return ButtonID.fromInt(i);
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -172,43 +272,46 @@ public class StateManagementGui extends GuiScreen {
         switch(id) {
             case REVOKE_CITIZENSHIP:
                 mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> {
-                    WarringStatesNetwork.NETWORK.sendToServer(new RevokeCitizenshipMessage(stateID, player.getPersistentID()));
+                    WarringStatesNetwork.NETWORK.sendToServer(new RevokeCitizenshipMessage(state.getUUID(), player.getPersistentID()));
                     player.closeScreen();
-                }, null, "warring_states.gui." + id.getKey() + "_confirmation", currentName));
+                }, null, "warring_states.gui." + id.getKey() + "_confirmation", state.getName()));
                 break;
             case MANAGE_APPLICATIONS:
-                NetworkUtils.sendTrackedMessage(new RequestStateCitizenApplicationListMessage(stateID), message -> mc.displayGuiScreen(new ListCurrentCitizenApplicationsGui(this, stateID, player, ((DeliverStateCitizenApplicationListMessage)message).getCitizenApplications())));
+                NetworkUtils.sendTrackedMessage(new RequestStateCitizenApplicationListMessage(state.getUUID()), message -> mc.displayGuiScreen(new ListCurrentCitizenApplicationsGui(this, state.getUUID(), player, ((DeliverStateCitizenApplicationListMessage)message).getCitizenApplications())));
                 break;
             case MANAGE_CITIZENS:
-                NetworkUtils.sendTrackedMessage(new RequestStateCitizenListMessage(stateID), message -> mc.displayGuiScreen(new ListCitizenManagementGui(this, stateID, player, playerPrivileges, ((DeliverStateCitizenListMessage)message).getCitizenList())));
+                NetworkUtils.sendTrackedMessage(new RequestStateCitizenListMessage(state.getUUID()), message -> mc.displayGuiScreen(new ListCitizenManagementGui(this, state.getUUID(), player, playerPrivileges, ((DeliverStateCitizenListMessage)message).getCitizenList())));
                 break;
             case RESCIND_CLAIM:
-                mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> WarringStatesNetwork.NETWORK.sendToServer(new RescindTerritoryClaimMessage(stateID, pos, player.getPersistentID())), null, "warring_states.gui." + id.getKey() + "_confirmation", currentName));
+                mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> WarringStatesNetwork.NETWORK.sendToServer(new RescindTerritoryClaimMessage(state.getUUID(), pos, player.getPersistentID())), null, "warring_states.gui." + id.getKey() + "_confirmation", state.getName()));
                 break;
             case DECLARE_WAR:
                 // TODO: We should have a tooltip for this button if this State is already at war to admonish them for being such a warmonger
-                NetworkUtils.sendTrackedMessage(new RequestAllValidWarrableStatesMessage(stateID, player.getPersistentID()), message -> mc.displayGuiScreen(new ListValidWarrableStatesGui(player, this, ((DeliverAllValidWarrableStatesMessage)message).getWargoals())));
+                NetworkUtils.sendTrackedMessage(new RequestAllValidWarrableStatesMessage(state.getUUID(), player.getPersistentID()), message -> mc.displayGuiScreen(new ListValidWarrableStatesGui(player, this, ((DeliverAllValidWarrableStatesMessage)message).getWargoals())));
                 break;
             case CHANGE_NAME:
                 mc.displayGuiScreen(new EditStringGui(this, player, newName -> {
-                    currentName = newName;
-                    WarringStatesNetwork.NETWORK.sendToServer(new UpdateStateInfoMessage(player.getPersistentID(), stateID, currentName));
-                }, id.getKey(), currentName));
+                    state.setName(newName);
+                    WarringStatesNetwork.NETWORK.sendToServer(new UpdateStateInfoMessage(player.getPersistentID(), state.getUUID(), state.getName()));
+                }, id.getKey(), state.getName()));
                 break;
             case CHANGE_DESC:
                 mc.displayGuiScreen(new EditStringGui(this, player, newDesc -> {
-                    currentDesc = newDesc;
-                    WarringStatesNetwork.NETWORK.sendToServer(new UpdateStateInfoMessage(player.getPersistentID(), stateID, currentName, currentDesc));
-                }, id.getKey(), currentDesc));
+                    state.setDescription(newDesc);
+                    WarringStatesNetwork.NETWORK.sendToServer(new UpdateStateInfoMessage(player.getPersistentID(), state.getUUID(), state.getName(), state.getDesc()));
+                }, id.getKey(), state.getDesc()));
                 break;
             case DISSOLVE_STATE:
-                mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> WarringStatesNetwork.NETWORK.sendToServer(new DissolveStateMessage(stateID, player.getPersistentID())), null, "warring_states.gui." + id.getKey() + "_confirmation", currentName));
+                mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> WarringStatesNetwork.NETWORK.sendToServer(new DissolveStateMessage(state.getUUID(), player.getPersistentID())), null, "warring_states.gui." + id.getKey() + "_confirmation", state.getName()));
                 break;
             case VIEW_CURRENT_CONFLICTS:
                 NetworkUtils.sendTrackedMessage(new RequestConflictListMessage(), message -> mc.displayGuiScreen(new ListCurrentConflictsGui(this, ((DeliverConflictListMessage)message).getConflicts())));
                 break;
             case MOVE_CAPITAL:
-                mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> WarringStatesNetwork.NETWORK.sendToServer(new MoveCapitalToMessage(stateID, player.getPersistentID(), pos)), null, "warring_states.gui." + id.getKey() + "_confirmation"));
+                mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> {
+                    WarringStatesNetwork.NETWORK.sendToServer(new MoveCapitalToMessage(state.getUUID(), player.getPersistentID(), pos));
+                    enableButton(buttonList.get(ButtonID.MOVE_CAPITAL.ordinal()));
+                }, null, "warring_states.gui." + id.getKey() + "_confirmation"));
                 break;
         }
     }
