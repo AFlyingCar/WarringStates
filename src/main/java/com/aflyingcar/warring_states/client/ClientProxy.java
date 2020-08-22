@@ -1,12 +1,15 @@
 package com.aflyingcar.warring_states.client;
 
 import com.aflyingcar.warring_states.client.gui.GuiID;
+import com.aflyingcar.warring_states.client.tile.TileEntityClaimerRenderer;
 import com.aflyingcar.warring_states.common.CommonProxy;
+import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
 import com.aflyingcar.warring_states.util.GuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 import java.util.HashMap;
@@ -20,6 +23,7 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void preinit() {
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityClaimer.class, new TileEntityClaimerRenderer());
     }
 
     @Override
