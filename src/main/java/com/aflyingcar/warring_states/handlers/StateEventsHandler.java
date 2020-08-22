@@ -19,6 +19,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -102,7 +103,10 @@ public class StateEventsHandler {
 
     @SubscribeEvent
     public static void onTerritoryClaimed(TerritoryClaimedEvent event) {
-        WarringStatesAPI.claimChunkForState(event.getState(), event.getWorld().getChunk(event.getPos()).getPos(), WorldUtils.getDimensionIDForWorld((WorldServer)event.getWorld()));
+        if(!WarringStatesAPI.claimChunkForState(event.getState(), event.getWorld().getChunk(event.getPos()).getPos(), WorldUtils.getDimensionIDForWorld((WorldServer)event.getWorld()))) {
+            event.setResult(Event.Result.DENY);
+            event.setFailureKey("warring_states.messages.claim_failure_reason.claiming_too_soon_after_last");
+        }
     }
 
     @SubscribeEvent

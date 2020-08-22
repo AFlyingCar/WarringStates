@@ -39,10 +39,20 @@ warring_states.messages.chunk_capture_beginning=A Claimer is being captured at %
 warring_states.messages.cannot_declare=Cannot declare a %s wargoal.
 warring_states.messages.belligerent_cannot_participate_in_war=You cannot declare war for another %l hours.
 warring_states.messages.target_cannot_participate_in_war=%s is protected for another %l hours.
+warring_states.messages.claimer_inactive=This claimer must be exposed to the sky in order to be active!
+warring_states.messages.cannot_claim_territory=Unable to claim this chunk because %s.
+warring_states.messages.cannot_rescind_capitol=You cannot rescind your claim on your capitol.
+
+warring_states.messages.claim_failure_reason.claiming_too_soon_after_last=not enough time has passed since the last claim
 
 # Tooltips
 warring_states.tooltip.war_flight_disabled=A strange force prevents this from working properly.
 warring_states.tooltip.not_enough_experience=Not enough experience to claim this wargoal.
+warring_states.tooltip.move_capital_not_available=This is already your capital.
+warring_states.tooltip.not_enough_privileges=You do not have the correct privileges for this. You must have privileges to %s.
+warring_states.tooltip.dissolve_cannot_be_undone=You cannot undo this action!
+warring_states.tooltip.manage_applications=%s applications are currently waiting.
+warring_states.tooltip.revoke_citizenship=You will need to renew your citizenship if you do this!
 
 # Gui Strings
 warring_states.gui.state.citizenship_apply=Are you sure you want to apply for citizenship with %s?

@@ -83,9 +83,21 @@ public class WarringStatesAPI {
         return StateManager.getInstance().getStateAtPosition(world, position) != null;
     }
 
+    /**
+     * Will claim the given chunk for the given State
+     * @param state The State to claim the chunk for.
+     * @param pos The position of the chunk to claim
+     * @param dimension The dimension the chunk is in
+     * @return True if the chunk was successfully claimed, false otherwise.
+     */
     @SideOnly(Side.SERVER)
-    public static void claimChunkForState(State state, ChunkPos pos, int dimension) {
-        state.claimTerritory(pos, dimension);
+    public static boolean claimChunkForState(State state, ChunkPos pos, int dimension) {
+        if(state.canClaimTerritory(pos, dimension)) {
+            state.claimTerritory(pos, dimension);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @SideOnly(Side.SERVER)
