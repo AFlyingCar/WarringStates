@@ -37,6 +37,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -180,7 +181,12 @@ public class ProtectionHandler {
                             event.setCanceled(true);
                         }
 
-                        MinecraftForge.EVENT_BUS.post(new TerritoryClaimedEvent(state, event.getWorld(), position));
+                        TerritoryClaimedEvent claimerEvent = new TerritoryClaimedEvent(state, event.getWorld(), position);
+                        MinecraftForge.EVENT_BUS.post(claimerEvent);
+                        if(claimerEvent.getResult() == Event.Result.DENY) {
+                            entity.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_claim_territory", claimerEvent.getFailureReason()));
+                            WorldUtils.destroyClaimer(event.getWorld(), position);
+                        }
                     } else {
                         WarringStatesMod.getLogger().info("Blocking EntityPlaceEvent for non privileged citizen for BlockClaimer");
                         entity.sendMessage(new TextComponentTranslation("warring_states.messages.claim_territory.permission_denied", state.getName()));
