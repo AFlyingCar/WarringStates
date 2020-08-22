@@ -45,8 +45,10 @@ public class State implements ISerializable {
 
     private UUID uuid; // TODO: This needs to get used by the rest of the mod instead of the name
 
-    private final Timer decayTimer;
+    private Timer decayTimer; // Counts time since last online player logged off
+    private Timer formationTimer; // Counts time since formation of this state
     private boolean hasDecayed;
+    private long lastClaimTicks;
 
     public State() {
         this(null, "", "");
@@ -68,6 +70,7 @@ public class State implements ISerializable {
         this.citizenApplications = new HashSet<>();
         this.controlledTerritory = new ArrayList<>();
         this.decayTimer = new Timer();
+        this.formationTimer = new Timer();
     }
 
     public void startDecayTimer() {
@@ -78,10 +81,22 @@ public class State implements ISerializable {
         decayTimer.stop();
     }
 
+    protected void setDecayTimer(Timer timer) {
+        this.decayTimer = timer;
+    }
+
+    protected void setCapitalIndex(int capital) {
+        this.capital = capital;
+    }
+
     public void addCitizen(UUID citizen, int privileges) {
         citizens.put(citizen, privileges);
 
         WarringStatesMod.proxy.markStateManagerDirty();
+    }
+
+    protected int getCapitalIndex() {
+        return capital;
     }
 
     public boolean hasCitizen(UUID uuid) {
@@ -119,6 +134,14 @@ public class State implements ISerializable {
     @Nullable
     public Set<IWarGoal> getWargoalsAgainst(@Nonnull UUID target) {
         return wargoals.getOrDefault(target, null);
+    }
+
+    /**
+     * Called when this state is first founded
+     */
+    public void onStateFounded() {
+        formationTimer.start();
+        lastClaimTicks = 0;
     }
 
     /**
@@ -198,6 +221,7 @@ public class State implements ISerializable {
 
         nbt.setTag("decayTimer", decayTimer.writeNBT(new NBTTagCompound()));
         nbt.setBoolean("hasDecayed", hasDecayed);
+        nbt.setTag("formationTimer", formationTimer.writeNBT(new NBTTagCompound()));
 
         return nbt;
     }
@@ -252,6 +276,10 @@ public class State implements ISerializable {
 
         if(nbt.hasKey("hasDecayed")) {
             hasDecayed = nbt.getBoolean("hasDecayed");
+        }
+
+        if(nbt.hasKey("formationTimer")) {
+            formationTimer.readNBT(nbt.getCompoundTag("formationTimer"));
         }
     }
 
@@ -324,6 +352,33 @@ public class State implements ISerializable {
     }
 
     /**
+     * Counts the number of chunks controlled by this State.
+     * @return The number of chunks controlled by this State.
+     */
+    public int sizeClaimedChunks() {
+        return controlledTerritory.stream().map(ChunkGroup::getChunks).map(Set::size).reduce(0, Integer::sum);
+    }
+
+    public long getTotalTimeToWaitBeforeNextClaim() {
+        return (Timer.VANILLA_TICKS_PER_HOUR * WarringStatesConfig.baseClaimWaitTime) + (sizeClaimedChunks() * Timer.VANILLA_TICKS_PER_MINUTE * WarringStatesConfig.claimWaitTimeMultiplier);
+    }
+
+    /**
+     * Checks if this State can claim the given chunk
+     * @param pos The chunk position
+     * @param dimension The dimension ID
+     * @return True if pos can be claimed by this State, false otherwise.
+     */
+    public boolean canClaimTerritory(ChunkPos pos, int dimension) {
+        if(sizeClaimedChunks() <= WarringStatesConfig.numFreeClaims)
+            return true;
+
+        long timeSinceLastClaim = formationTimer.getCurrentTick() - lastClaimTicks;
+
+        return timeSinceLastClaim >= getTotalTimeToWaitBeforeNextClaim();
+    }
+
+    /**
      * Claims a chunk of territory for this {@code State}
      * @param pos The chunk position to claim
      */
@@ -345,16 +400,18 @@ public class State implements ISerializable {
             capital = controlledTerritory.indexOf(group);
         }
 
+        lastClaimTicks = formationTimer.getCurrentTick();
+
         WarringStatesMod.proxy.markStateManagerDirty();
     }
 
-    public void unclaimTerritory(ChunkPos pos, int dimension) {
+    public boolean unclaimTerritory(ChunkPos pos, int dimension) {
         ChunkGroup group = getContainingChunkGroup(pos, dimension);
 
         if(WarringStatesConfig.preventUnclaimingCapital) {
             int groupIndex = controlledTerritory.indexOf(group);
             if(groupIndex == capital) {
-                return;
+                return false;
             }
         }
 
@@ -371,7 +428,12 @@ public class State implements ISerializable {
             }
         }
 
+        // Reset this to 0 so that you can claim more territory immediately afterwards
+        lastClaimTicks = 0;
+
         WarringStatesMod.proxy.markStateManagerDirty();
+
+        return true;
     }
 
     public void setDescription(String desc) {
@@ -575,6 +637,26 @@ public class State implements ISerializable {
     @Override
     public String toString() {
         return "State{UUID=" + uuid + ", Name=" + name + "}";
+    }
+
+    protected long getLastClaimTicks() {
+        return lastClaimTicks;
+    }
+
+    protected Timer getFormationTimer() {
+        return formationTimer;
+    }
+
+    protected void setFormationTimer(Timer timer) {
+        formationTimer = timer;
+    }
+
+    protected void setLastClaimTicks(long lastClaimTicks) {
+        this.lastClaimTicks = lastClaimTicks;
+    }
+
+    protected List<ChunkGroup> getControlledTerritory() {
+        return controlledTerritory;
     }
 }
 
