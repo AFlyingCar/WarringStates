@@ -27,6 +27,17 @@ public class Timer implements ISerializable {
     public Timer() {
     }
 
+    /**
+     * Initializes data for this Timer.
+     * Will not add this Timer to the timers list even if started is true.
+     * @param currentTick The current tick
+     * @param started Whether this Timer has been started.
+     */
+    public Timer(long currentTick, boolean started) {
+        this.currentTick = currentTick;
+        this.started = started;
+    }
+
     public void start() {
         if(started) return;
 
