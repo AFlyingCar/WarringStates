@@ -7,7 +7,6 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class WarringStatesItems {
     public final static Item CLAIMER = null;
     public final static Item WARGOAL_CLAIMER = null;
-    public final static Item DORMANT_CLAIMER = null;
     public final static Item FLAG_BASE = null;
     public final static Item FLAG_POLE = null;
 }
