@@ -94,12 +94,14 @@ public class WarringStatesMod {
         WarringStatesNetwork.registerServerMessage(UpdatePlayerPrivilegesHandler.class, UpdatePlayerPrivilegesMessage.class);
         WarringStatesNetwork.registerServerMessage(KickPlayerFromStateHandler.class, KickPlayerFromStateMessage.class);
         WarringStatesNetwork.registerServerMessage(MoveCapitalToHandler.class, MoveCapitalToMessage.class);
+        WarringStatesNetwork.registerServerMessage(RequestFullStateInformationHandler.class, RequestFullStateInformationMessage.class);
 
         WarringStatesNetwork.registerClientMessage(OpenGuiHandler.class, OpenGuiMessage.class);
         WarringStatesNetwork.registerClientMessage(DeliverConflictListHandler.class, DeliverConflictListMessage.class);
         WarringStatesNetwork.registerClientMessage(DeliverStateCitizenListHandler.class, DeliverStateCitizenListMessage.class);
         WarringStatesNetwork.registerClientMessage(DeliverAllValidWarrableStatesHandler.class, DeliverAllValidWarrableStatesMessage.class);
         WarringStatesNetwork.registerClientMessage(DeliverStateCitizenApplicationListHandler.class, DeliverStateCitizenApplicationListMessage.class);
+        WarringStatesNetwork.registerClientMessage(DeliverFullStateInformationHandler.class, DeliverFullStateInformationMessage.class);
 
         if(side == Side.SERVER) {
             StateManager.getInstance().setSide(side = event.getSide());
@@ -190,7 +192,9 @@ public class WarringStatesMod {
         @SubscribeEvent
         public static void addModels(ModelRegistryEvent event) {
             ModelLoader.setCustomModelResourceLocation(WarringStatesItems.FLAG_POLE, 0, new ModelResourceLocation(WarringStatesItems.FLAG_POLE.getRegistryName(), "inventory"));
+            ModelLoader.setCustomModelResourceLocation(WarringStatesItems.FLAG_BASE, 0, new ModelResourceLocation(WarringStatesItems.FLAG_BASE.getRegistryName(), "inventory"));
             ModelLoader.setCustomModelResourceLocation(WarringStatesItems.WARGOAL_CLAIMER, 0, new ModelResourceLocation(WarringStatesItems.WARGOAL_CLAIMER.getRegistryName(), "inventory"));
+            ModelLoader.setCustomModelResourceLocation(WarringStatesItems.CLAIMER, 0, new ModelResourceLocation(WarringStatesItems.CLAIMER.getRegistryName(), "inventory"));
         }
     }
 }
