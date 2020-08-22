@@ -158,6 +158,7 @@ public final class StateManager extends BaseManager {
 
     private State newState(@Nonnull State state) {
         if(!states.contains(state)) {
+            state.onStateFounded();
             states.add(state);
             markDirty();
         } else {
