@@ -11,18 +11,22 @@ import com.aflyingcar.warring_states.util.GuiUtils;
 import com.aflyingcar.warring_states.util.NetworkUtils;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
 
 public class StateManagementGui extends GuiScreen {
+    private static final ResourceLocation GUI_BACKGROUND = new ResourceLocation(WarringStatesMod.MOD_ID, "textures/gui/state_management.png");
+
     private final EntityPlayer player;
     private final int playerPrivileges;
     private final ExtendedBlockPos pos; // The position of the TileEntity that is being interacted with
 
-    private final int textureWidth = 150;
-    private final int textureHeight = 150;
+    private final int textureWidth = 300;
+    private final int textureHeight = 200;
 
     private int posX = 0;
     private int posY = 0;
@@ -136,7 +140,7 @@ public class StateManagementGui extends GuiScreen {
     public void initGui() {
         buttonList.clear();
 
-        posX = (this.width - textureWidth) / 4;
+        posX = (this.width - textureWidth) / 2;
         posY = (this.height - textureHeight) / 2 + 20*2;
 
         int largestWidth = 0;
@@ -152,9 +156,11 @@ public class StateManagementGui extends GuiScreen {
             }
         }
 
+        int centeredButtonX = GuiUtils.getPositionToCenterElementOnTexture(width, textureWidth, largestWidth);
+
         // Treat Leave State specially since it should be centered
         buttonList.get(0).width = largestWidth;
-        buttonList.get(0).x = posX * 2;// - (largestWidth / 2);
+        buttonList.get(0).x = centeredButtonX;
         buttonList.get(0).y = this.posY;
 
         boolean left = true;
@@ -163,7 +169,7 @@ public class StateManagementGui extends GuiScreen {
             GuiButton button = buttonList.get(i);
             int posX = left ? this.posX : this.posX + buttonList.get(i - 1).width + GuiUtils.DEFAULT_TEXT_BUFFER_SIZE;
             button.width = largestWidth;
-            button.x = posX;
+            button.x = posX + 10;
             button.y = posY;
 
             posY += left ? 0 : 20 + GuiUtils.DEFAULT_TEXT_BUFFER_SIZE;
@@ -173,7 +179,7 @@ public class StateManagementGui extends GuiScreen {
 
         GuiButton dissolveButton = buttonList.get(ButtonID.DISSOLVE_STATE.ordinal());
         dissolveButton.width = largestWidth;
-        dissolveButton.x = posX * 2;// - (largestWidth  / 2);
+        dissolveButton.x = centeredButtonX;
         dissolveButton.y = posY + (left ? 0 : 20 + GuiUtils.DEFAULT_TEXT_BUFFER_SIZE);
 
         // Only color it RED if the player has privileges for this action
@@ -196,17 +202,22 @@ public class StateManagementGui extends GuiScreen {
         // Draws slightly darkened background
         drawDefaultBackground();
 
-        // TODO
-        // this.mc.renderEngine.bindTexture(new ResourceLocation(WarringStatesMod.MOD_ID, "wtf???"));
+        this.mc.renderEngine.bindTexture(GUI_BACKGROUND);
 
         this.posX = (this.width - textureWidth) / 2;
         this.posY = (this.height - textureHeight) / 2;
 
         // TODO: Draw GUI window
-        drawTexturedModalRect(posX, posY, 0, 0, textureWidth, textureHeight);
+        GlStateManager.pushMatrix();
+        GlStateManager.scale(2, 2, 1);
+        drawTexturedModalRect(posX / 2, posY / 2, 0, 0, textureWidth / 2, textureHeight / 2);
+        GlStateManager.popMatrix();
 
-        drawString(fontRenderer, GuiUtils.translate("management_title", state.getName()), posX, posY, 0xFFFFFF);
-        drawString(fontRenderer, state.getDesc(), posX, posY + 20 + GuiUtils.DEFAULT_TEXT_BUFFER_SIZE, 0xFFFFFF);
+        int titleX = GuiUtils.getPositionToCenterTextOnTexture(width, textureWidth, fontRenderer, "management_title", state.getName());
+        drawString(fontRenderer, GuiUtils.translate("management_title", state.getName()), titleX, posY + 8, 0xFFFFFF);
+
+        int descX = GuiUtils.getPositionToCenterStringOnTexture(width, textureWidth, fontRenderer, state.getDesc());
+        drawString(fontRenderer, state.getDesc(), descX, posY + 20 + GuiUtils.DEFAULT_TEXT_BUFFER_SIZE, 0xFFFFFF);
 
         // Draw buttons and stuff
         super.drawScreen(mouseX, mouseY, partialTicks);
