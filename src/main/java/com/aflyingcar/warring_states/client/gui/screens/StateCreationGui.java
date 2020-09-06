@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
@@ -23,8 +24,13 @@ public class StateCreationGui extends GuiScreen {
     private final TileEntityClaimer claimer;
     private final EntityPlayer player;
 
-    private final int textureWidth = 150;
+    private final int textureWidth = 170;
     private final int textureHeight = 150;
+
+    private final int LBORDER_WIDTH = 8;
+    private final int RBORDER_WIDTH = 7;
+    private final int TBORDER_WIDTH = 8;
+    private final int BBORDER_WIDTH = 6;
 
     private int posX = 0;
     private int posY = 0;
@@ -40,17 +46,30 @@ public class StateCreationGui extends GuiScreen {
     public void initGui() {
         buttonList.clear();
 
-        posX = (this.width - textureWidth) / 2;
-        posY = (this.height - textureHeight) / 2;
+        posX = (this.width - textureWidth) / 2 + LBORDER_WIDTH;
+        posY = (this.height - textureHeight) / 2 + TBORDER_WIDTH;
 
-        buttonList.add(new GuiButton(0, posX + textureWidth, posY + textureHeight, GuiUtils.getStringWidth(fontRenderer, "Cancel"), 20, "Cancel"));
-        buttonList.add(new GuiButton(1, posX, posY + textureHeight, GuiUtils.getStringWidth(fontRenderer, "Confirm"), 20, "Confirm"));
+        int cancelWidth = GuiUtils.getTranslatedStringWidth(fontRenderer, "cancel");
+        int confirmWidth = GuiUtils.getTranslatedStringWidth(fontRenderer, "confirm");
 
-        nameField = new GuiTextField(2, fontRenderer, posX, posY, textureWidth, 20);
+        int buttonYPos = posY + textureHeight - BBORDER_WIDTH - TBORDER_WIDTH - 20 - 5;
+
+        buttonList.add(new GuiButton(0, posX + textureWidth - cancelWidth - RBORDER_WIDTH - LBORDER_WIDTH, buttonYPos, cancelWidth, 20, GuiUtils.translate("cancel")));
+        buttonList.add(new GuiButton(1, posX, buttonYPos, confirmWidth, 20, GuiUtils.translate("confirm")));
+
+        int titleHeight = 20;
+
+        int textFieldWidth = textureWidth - (LBORDER_WIDTH + RBORDER_WIDTH);
+
+        int labelHeight = 20;
+        posY += titleHeight + labelHeight;
+
+        nameField = new GuiTextField(2, fontRenderer, posX, posY, textFieldWidth, 20);
         nameField.setFocused(true);
         nameField.setCanLoseFocus(true);
 
-        descField = new GuiTextField(3, fontRenderer, posX, posY + 20, textureWidth, 20);
+        posY += labelHeight + nameField.height;
+        descField = new GuiTextField(3, fontRenderer, posX, posY, textFieldWidth, 20);
         descField.setCanLoseFocus(true);
     }
 
@@ -84,19 +103,25 @@ public class StateCreationGui extends GuiScreen {
         // Draws slightly darkened background
         drawDefaultBackground();
 
-        // TODO
-        // this.mc.renderEngine.bindTexture(new ResourceLocation(WarringStatesMod.MOD_ID, "wtf???"));
+        this.mc.renderEngine.bindTexture(new ResourceLocation(WarringStatesMod.MOD_ID, "textures/gui/state_creation.png"));
 
         this.posX = (this.width - textureWidth) / 2;
         this.posY = (this.height - textureHeight) / 2;
 
-        // TODO: Draw GUI window
         drawTexturedModalRect(posX, posY, 0, 0, textureWidth, textureHeight);
 
-        drawString(fontRenderer, "State Creation Wizard", posX + 20, posY + 31, Color.white.getRGB());
+        posX += LBORDER_WIDTH;
+        posY += TBORDER_WIDTH;
 
-        // TODO: We should draw labels for what these fields mean
+        int titleWidth = GuiUtils.getTranslatedStringWidth(fontRenderer, "state_creator_title");
+        drawString(fontRenderer, GuiUtils.translate("state_creator_title"), posX + titleWidth / 2, posY, Color.white.getRGB());
+        posY += 20 + 5;
+
+        drawString(fontRenderer, GuiUtils.translate("state_creator_name"), nameField.x, posY + 4, Color.white.getRGB());
         nameField.drawTextBox();
+        posY += 20 + nameField.height + 5;
+
+        drawString(fontRenderer, GuiUtils.translate("state_creator_desc"), descField.x, posY, Color.white.getRGB());
         descField.drawTextBox();
 
         // Draw buttons and stuff
