@@ -69,4 +69,16 @@ public class GuiUtils {
     public static String translate(String translationKey, Object... args) {
         return I18n.format("warring_states.gui." + translationKey, args);
     }
+
+    public static int getPositionToCenterElementOnTexture(int screenWidth, int textureWidth, int elementWidth) {
+        return ((screenWidth - textureWidth) / 2) + (textureWidth / 2) - elementWidth / 2;
+    }
+
+    public static int getPositionToCenterTextOnTexture(int screenWidth, int textureWidth, FontRenderer fontRenderer, String key, String... args) {
+        return getPositionToCenterElementOnTexture(screenWidth, textureWidth, getTranslatedStringWidth(fontRenderer, key, args));
+    }
+
+    public static int getPositionToCenterStringOnTexture(int screenWidth, int textureWidth, FontRenderer fontRenderer, String text) {
+        return getPositionToCenterElementOnTexture(screenWidth, textureWidth, getStringWidth(fontRenderer, text));
+    }
 }
