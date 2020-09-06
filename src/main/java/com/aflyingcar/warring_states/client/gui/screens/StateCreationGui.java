@@ -99,6 +99,14 @@ public class StateCreationGui extends GuiScreen {
     }
 
     @Override
+    protected void mouseClicked(int p_mouseClicked_1_, int p_mouseClicked_2_, int p_mouseClicked_3_) throws IOException {
+        super.mouseClicked(p_mouseClicked_1_, p_mouseClicked_2_, p_mouseClicked_3_);
+
+        nameField.mouseClicked(p_mouseClicked_1_, p_mouseClicked_2_, p_mouseClicked_3_);
+        descField.mouseClicked(p_mouseClicked_1_, p_mouseClicked_2_, p_mouseClicked_3_);
+    }
+
+    @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         // Draws slightly darkened background
         drawDefaultBackground();
