@@ -11,7 +11,7 @@ public class CreativeTab extends CreativeTabs {
     public static final CreativeTab TAB = new CreativeTab();
 
     public CreativeTab() {
-        super(WarringStatesMod.MOD_NAME);
+        super(WarringStatesMod.MOD_ID);
     }
 
     @Override
