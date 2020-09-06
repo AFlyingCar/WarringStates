@@ -42,6 +42,8 @@ warring_states.messages.target_cannot_participate_in_war=%s is protected for ano
 warring_states.messages.claimer_inactive=This claimer must be exposed to the sky in order to be active!
 warring_states.messages.cannot_claim_territory=Unable to claim this chunk because %s.
 warring_states.messages.cannot_rescind_capitol=You cannot rescind your claim on your capitol.
+warring_states.messages.no_longer_exposed_to_sky_warning=The claimer for this chunk can no longer see the sky! It will self destruct in %s minutes.
+warring_states.messages.must_be_exposed_to_sky=The claimer must be exposed to the sky.
 
 warring_states.messages.claim_failure_reason.claiming_too_soon_after_last=not enough time has passed since the last claim
 
@@ -60,6 +62,10 @@ warring_states.gui.management.declare_war=Are you sure you want to declare war o
 
 warring_states.gui.citizen_management=Citizen Management
 warring_states.gui.warrable_states=Other States
+
+warring_states.gui.state_creator_title=State Creator
+warring_states.gui.state_creator_name=State Name:
+warring_states.gui.state_creator_desc=State Description:
 
 warring_states.gui.management_title=%s Management
 warring_states.gui.revoke_citizenship=Leave %s
