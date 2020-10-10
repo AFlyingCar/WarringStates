@@ -91,6 +91,7 @@ public class State implements ISerializable {
 
     public void addCitizen(UUID citizen, int privileges) {
         citizens.put(citizen, privileges);
+        StateManager.getInstance().removeAllApplicationsFor(citizen);
 
         WarringStatesMod.proxy.markStateManagerDirty();
     }
@@ -324,7 +325,7 @@ public class State implements ISerializable {
      * @return The nearest {@code ChunkGroup} to the given {@code ChunkPos} that is not full, or null if none are found
      */
     @Nullable
-    private ChunkGroup getNearestNonFullChunkGroup(ChunkPos pos) {
+    public ChunkGroup getNearestNonFullChunkGroup(ChunkPos pos) {
         for(ChunkGroup group : controlledTerritory) {
             if(group.getChunks().size() < MAX_CHUNKGROUP_SIZE && group.isChunkNearby(pos))
                 return group;
@@ -484,14 +485,21 @@ public class State implements ISerializable {
     /**
      * Updates the state information of all claimers controlled by this state
      */
+    @Deprecated
     public void updateAllClaimers() {
         for(ChunkGroup group : controlledTerritory) {
-            int dimension = group.getDimension();
-            World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(dimension);
             for(ChunkPos chunk : group.getChunks()) {
-                WorldUtils.getTileEntitiesWithinChunk(TileEntityClaimer.class, world, chunk).forEach(claimer -> claimer.changeOwner(name, desc, uuid));
             }
         }
+    }
+
+    public List<TileEntityClaimer> getAllClaimers() {
+        return controlledTerritory.stream().map(group -> {
+            int dimension = group.getDimension();
+            World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(dimension);
+
+            return group.getChunks().stream().map(chunk -> WorldUtils.getTileEntitiesWithinChunk(TileEntityClaimer.class, world, chunk)).collect(Collectors.toList());
+        }).flatMap(Collection::stream).flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     public boolean doesControlTerritory(ChunkPos position, int dimension) {

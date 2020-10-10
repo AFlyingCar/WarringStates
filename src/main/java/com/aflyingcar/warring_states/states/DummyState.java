@@ -31,6 +31,8 @@ public class DummyState extends State {
         setHasDecayed(state.hasDecayed());
         setLastClaimTicks(state.getLastClaimTicks());
         getControlledTerritory().addAll(state.getControlledTerritory());
+        getAllApplications().addAll(state.getAllApplications());
+        getCitizensWithPrivileges().putAll(state.getCitizensWithPrivileges());
     }
 
     public static DummyState readStateData(ByteBuf buf) {
@@ -56,6 +58,9 @@ public class DummyState extends State {
         NetworkUtils.writeCollection(buf, state.getControlledTerritory(), NetworkUtils::writeChunkGroup);
 
         buf.writeBoolean(WarManager.getInstance().isAtWar(state));
+
+        NetworkUtils.writeCollection(buf, state.getAllApplications(), NetworkUtils::writeUUID);
+        NetworkUtils.writeMap(buf, state.getCitizensWithPrivileges(), NetworkUtils::writeUUID, ByteBuf::writeInt);
     }
 
     public void readData(ByteBuf buf) {
@@ -69,6 +74,9 @@ public class DummyState extends State {
         getControlledTerritory().addAll(NetworkUtils.readList(buf, NetworkUtils::readChunkGroup));
 
         isAtWar = buf.readBoolean();
+
+        getAllApplications().addAll(NetworkUtils.readSet(buf, NetworkUtils::readUUID));
+        getCitizensWithPrivileges().putAll(NetworkUtils.readMap(buf, NetworkUtils::readUUID, ByteBuf::readInt));
     }
 
     public void writeData(ByteBuf buf) {
@@ -77,11 +85,6 @@ public class DummyState extends State {
 
     @Override
     public void addCitizen(UUID citizen, int privileges) { }
-
-    @Override
-    public boolean hasCitizen(UUID uuid) {
-        return false;
-    }
 
     @Override
     public int getPrivileges(UUID uuid) {
@@ -128,17 +131,7 @@ public class DummyState extends State {
     }
 
     @Override
-    public boolean hasApplicationFor(UUID persistentID) {
-        return false;
-    }
-
-    @Override
     public List<ChunkPos> getClaimedTerritory() {
-        return null;
-    }
-
-    @Override
-    public Set<UUID> getCitizens() {
         return null;
     }
 

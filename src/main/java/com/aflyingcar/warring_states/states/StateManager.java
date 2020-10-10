@@ -226,4 +226,8 @@ public final class StateManager extends BaseManager {
         states.remove(state);
         markDirty();
     }
+
+    public void removeAllApplicationsFor(UUID playerUUID) {
+        states.stream().filter(s -> s.hasApplicationFor(playerUUID)).forEach(s -> s.rejectApplicationFor(playerUUID));
+    }
 }
