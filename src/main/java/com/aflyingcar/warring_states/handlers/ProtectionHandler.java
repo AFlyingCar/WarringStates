@@ -10,10 +10,7 @@ import com.aflyingcar.warring_states.events.TerritoryClaimedEvent;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
-import com.aflyingcar.warring_states.util.ExtendedBlockPos;
-import com.aflyingcar.warring_states.util.GuiUtils;
-import com.aflyingcar.warring_states.util.RestorableBlock;
-import com.aflyingcar.warring_states.util.WorldUtils;
+import com.aflyingcar.warring_states.util.*;
 import com.aflyingcar.warring_states.war.Conflict;
 import com.aflyingcar.warring_states.war.WarManager;
 import net.minecraft.block.Block;
@@ -101,8 +98,29 @@ public class ProtectionHandler {
 
         EntityPlayer player = event.getPlayer();
 
-        if(player.isCreative() && WarringStatesConfig.allowCreativeToIgnoreProtections) {
-            return;
+        if(player.isCreative()) {
+            // Make sure that claimers cannot be broken _AT ALL_, doing so could cause borkness
+            IBlockState blockState = event.getState();
+            if(blockState.getBlock() instanceof BlockClaimer && blockState.getPropertyKeys().contains(BlockClaimer.HALF)) {
+                BlockPos pos = event.getPos();
+                if(blockState.getValue(BlockClaimer.HALF) == BlockClaimer.ClaimerHalf.TOP) {
+                    pos = pos.down();
+                }
+
+                // Do a check for the tile entity here anyway _JUST IN CASE_
+                TileEntity te = event.getWorld().getTileEntity(pos);
+                if(te instanceof TileEntityClaimer) {
+                    TileEntityClaimer tec = (TileEntityClaimer)te;
+                    if(StateManager.getInstance().getStateFromUUID(tec.getStateUUID()) != null) {
+                        event.setCanceled(true);
+                        return;
+                    }
+                }
+            }
+
+            if(WarringStatesConfig.allowCreativeToIgnoreProtections) {
+                return;
+            }
         }
 
         // TODO: Check if block placed is a BlockClaimer. If it is, make sure that they have permission to claim territory
@@ -168,6 +186,19 @@ public class ProtectionHandler {
                     event.setCanceled(true);
             } else {
                 State state = StateManager.getInstance().getStateFromPlayer((EntityPlayer)entity);
+
+                // Skip the sky check if this claimer would end up going into the capital group
+                ChunkGroup group = state == null ? null : state.getNearestNonFullChunkGroup(WorldUtils.getChunkFor(event.getWorld(), position).getPos());
+                ChunkGroup capital = state == null ? null : state.getCapital();
+
+                boolean skipSkyCheck = capital != null && (capital.equals(group));
+
+                if(WarringStatesConfig.requireSkyExposure && !skipSkyCheck && !event.getWorld().canBlockSeeSky(position)) {
+                    entity.sendMessage(new TextComponentTranslation("warring_states.messages.must_be_exposed_to_sky"));
+                    WorldUtils.destroyClaimer(event.getWorld(), position);
+                    event.setCanceled(true);
+                    return;
+                }
 
                 if(state != null) {
                     // Player is a part of a state, so they must have permission to claim territory for that state
@@ -242,6 +273,8 @@ public class ProtectionHandler {
 
     @SubscribeEvent
     public static void onBucketFillOrBucketEmpty(FillBucketEvent event) {
+        if(event.getWorld().isRemote) return;
+
         RayTraceResult target = event.getTarget();
 
         // If target is null, then the bucket is not being filled
@@ -461,7 +494,7 @@ public class ProtectionHandler {
         List<BlockPos> affected = event.getAffectedBlocks();
         int dimension = WorldUtils.getDimensionIDForWorld((WorldServer)event.getWorld());
 
-        for(Iterator<BlockPos> affectedPositionIter = affected.iterator(); affectedPositionIter.hasNext();) {
+        for(Iterator<BlockPos> affectedPositionIter = affected.listIterator(); affectedPositionIter.hasNext();) {
             BlockPos affectedPosition = affectedPositionIter.next();
 
             ExtendedBlockPos extendedPosition = new ExtendedBlockPos(affectedPosition, dimension);
@@ -484,12 +517,14 @@ public class ProtectionHandler {
                         saveChangeForRollback(war.getRight(), extendedPosition, event.getWorld().getBlockState(affectedPosition), event.getWorld().getTileEntity(affectedPosition));
                     }
                 }
-            } else {
+            } else if(owningState != null) { // Otherwise, we need to make sure that this position is actually owned by somebody before we do anything about protecting it.
                 // If we are at war, then it doesn't matter who we are at war with, prepare changes for rollback
                 List<Conflict> wars = WarManager.getInstance().getAllConflictsInvolving(owningState);
                 if(!wars.isEmpty()) {
-                    // TODO: How do we save explosions for rollback?
-                    // saveChangeForRollback();
+                    // Save modification for rollback with each conflict
+                    for(Conflict war : wars) {
+                        saveChangeForRollback(war, extendedPosition, event.getWorld().getBlockState(affectedPosition), event.getWorld().getTileEntity(affectedPosition));
+                    }
                 } else {
                     // We are not at war, so do not allow the effect to continue
                     affectedPositionIter.remove();

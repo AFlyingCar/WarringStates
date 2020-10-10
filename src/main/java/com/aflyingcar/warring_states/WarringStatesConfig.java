@@ -92,4 +92,15 @@ public class WarringStatesConfig {
 
     @Config.Comment("Number of initial claims that are free before the wait time equation takes effect.")
     public static int numFreeClaims = 1;
+
+    @Config.Comment("How long it takes before a claimer self destructs from not being able to see the sky, in minutes.")
+    public static int skyExposureSelfDestructionGrace = 1;
+
+    @Config.Comment("Should claimers be required to see the sky.")
+    public static boolean requireSkyExposure = true;
+
+    @Config.Comment({"What should happen when a claimer is no longer exposed to the sky, but have wargoals against them?",
+                     "0 => Sky exposure restriction is lifted if wargoals exist.",
+                     "1 => Wargoals are removed with the destruction of the claimer."})
+    public static int skyExposureBehaviorWhenWargoalsExist = 0;
 }
