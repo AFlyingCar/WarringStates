@@ -4,6 +4,7 @@ import com.aflyingcar.warring_states.WarringStatesConfig;
 import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.war.Conflict;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -39,4 +40,12 @@ public class WaitoutTimerWarGoal implements IWarGoal {
 
     @Override
     public void readNBT(NBTTagCompound nbt) { }
+
+    @Override
+    public void writeToBuf(ByteBuf buf) {
+        buf.writeInt(WarGoalFactory.Goals.WAITOUT_TIMER.ordinal());
+    }
+
+    @Override
+    public void readFromBuf(ByteBuf buf) { }
 }

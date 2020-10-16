@@ -6,11 +6,14 @@ import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
+import com.aflyingcar.warring_states.util.NetworkUtils;
 import com.aflyingcar.warring_states.util.WorldUtils;
 import com.aflyingcar.warring_states.war.Conflict;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -18,6 +21,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
+import java.util.Set;
 
 @ParametersAreNonnullByDefault
 public class StealChunkWarGoal implements IWarGoal {
@@ -84,8 +88,28 @@ public class StealChunkWarGoal implements IWarGoal {
         }
     }
 
+    private static boolean checkWargoalAgainstOtherWargoals(@Nullable Set<IWarGoal> wargoals, ChunkPos declarerChunk) {
+        return wargoals == null ||
+               wargoals.stream().filter(StealChunkWarGoal.class::isInstance).map(StealChunkWarGoal.class::cast).map(StealChunkWarGoal::getChunk)
+                                .anyMatch(c -> WorldUtils.areChunksAdjacent(c, declarerChunk));
+    }
+
     public static boolean canWargoalBeDeclared(@Nullable EntityPlayer declarer) {
-        return declarer != null && declarer.experience >= WarringStatesConfig.minimumExperienceRequiredForStealingChunks;
+        if(declarer == null) return false;
+
+        // Only perform this check on the server
+        if(!declarer.world.isRemote) {
+            ChunkPos declarerChunk = WorldUtils.getChunkFor(declarer.world, declarer.getPosition()).getPos();
+            State declarerState = StateManager.getInstance().getStateFromPlayer(declarer);
+            if(declarerState == null) return false;
+            State target = StateManager.getInstance().getStateAtPosition(declarer.world, declarer.getPosition());
+            if(target == null) return false;
+            int dimension = WorldUtils.getDimensionIDForWorld((WorldServer)declarer.world);
+            return checkWargoalAgainstOtherWargoals(declarerState.getWargoals().get(target.getUUID()), declarerChunk) ||
+                   WorldUtils.doesChunkBorderWilderness(declarerChunk, dimension) || WorldUtils.doesChunkBorderState(declarerChunk, dimension);
+        }
+
+        return declarer.experience >= WarringStatesConfig.minimumExperienceRequiredForStealingChunks;
     }
 
     @Override
@@ -108,5 +132,20 @@ public class StealChunkWarGoal implements IWarGoal {
         chunk = new ChunkPos(xz[0], xz[1]);
 
         dimension = nbt.getInteger("dimension");
+    }
+
+    @Override
+    public void writeToBuf(ByteBuf buf) {
+        buf.writeInt(WarGoalFactory.Goals.STEAL_CHUNK.ordinal());
+        NetworkUtils.writeChunkPos(buf, chunk);
+        buf.writeInt(dimension);
+        buf.writeBoolean(accomplished);
+    }
+
+    @Override
+    public void readFromBuf(ByteBuf buf) {
+        chunk = NetworkUtils.readChunkPos(buf);
+        dimension = buf.readInt();
+        accomplished = buf.readBoolean();
     }
 }
