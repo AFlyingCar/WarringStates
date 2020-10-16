@@ -1,6 +1,7 @@
 package com.aflyingcar.warring_states.api;
 
 import com.aflyingcar.warring_states.states.State;
+import com.aflyingcar.warring_states.util.INetSerializable;
 import com.aflyingcar.warring_states.util.ISerializable;
 import com.aflyingcar.warring_states.war.Conflict;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,7 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * Base class for a war goal
  */
 @ParametersAreNonnullByDefault
-public interface IWarGoal extends ISerializable {
+public interface IWarGoal extends ISerializable, INetSerializable {
     /**
      * Runs updates for this wargoal
      * @param dt Amount of time since the last update

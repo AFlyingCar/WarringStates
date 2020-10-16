@@ -2,6 +2,8 @@ package com.aflyingcar.warring_states.util;
 
 import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.WarringStatesNetwork;
+import com.aflyingcar.warring_states.states.DummyState;
+import com.aflyingcar.warring_states.war.DummyConflict;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.IThreadListener;
@@ -210,6 +212,19 @@ public class NetworkUtils {
         group.getChunks().addAll(NetworkUtils.readSet(buf, NetworkUtils::readChunkPos));
 
         return group;
+    }
+
+    public static void writeConflict(ByteBuf byteBuf, DummyConflict war) {
+        writeMap(byteBuf, war.getDefenders(), (byteBuf1, dummyState) -> dummyState.writeData(byteBuf1), ByteBuf::writeInt);
+        writeMap(byteBuf, war.getBelligerents(), (byteBuf1, dummyState) -> dummyState.writeData(byteBuf1), ByteBuf::writeInt);
+    }
+
+    public static DummyConflict readConflict(ByteBuf byteBuf) {
+        return new DummyConflict(readMap(byteBuf, DummyState::readStateData, ByteBuf::readInt), readMap(byteBuf, DummyState::readStateData, ByteBuf::readInt));
+    }
+
+    public static void writeNetSerializable(ByteBuf byteBuf, INetSerializable serializable) {
+        serializable.writeToBuf(byteBuf);
     }
 }
 
