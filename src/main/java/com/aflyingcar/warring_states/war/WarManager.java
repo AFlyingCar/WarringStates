@@ -9,6 +9,7 @@ import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.util.Timer;
 import com.aflyingcar.warring_states.util.*;
+import com.aflyingcar.warring_states.war.goals.WarGoalFactory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -115,7 +116,7 @@ public final class WarManager extends BaseManager {
     public List<RestorableBlock> getRestorableBlocksFor(Conflict conflict) {
         int cindex = conflicts.indexOf(conflict);
 
-        Set<ExtendedBlockPos> positions = conflictModificationMapping.get(cindex);
+        Set<ExtendedBlockPos> positions = conflictModificationMapping.getOrDefault(cindex, new HashSet<>());
 
         return Collections.unmodifiableList(positions.stream().filter(restorableBlockConflictMapping::containsKey).map(restorableBlockConflictMapping::get).map(Pair::getLeft).collect(Collectors.toList()));
     }
@@ -285,6 +286,7 @@ public final class WarManager extends BaseManager {
     }
 
     private void registerConflict(Conflict conflict) {
+        // TODO: Merge conflicts together
         conflicts.add(conflict);
         markDirty();
     }
@@ -410,6 +412,27 @@ public final class WarManager extends BaseManager {
 
         // Allow war declaration to be cancelled
         if(!MinecraftForge.EVENT_BUS.post(new WarDeclaredEvent(conflict))) {
+            for(Conflict c : conflicts) {
+                Set<UUID> bIDs = c.getBelligerents().keySet().stream().map(State::getUUID).collect(Collectors.toSet());
+                Set<UUID> dIDs = c.getDefenders().keySet().stream().map(State::getUUID).collect(Collectors.toSet());
+
+                // If this belligerent is already in a war, and the target is not also in that war (on the same side),
+                //  then merge the two
+                // Or, if the target is already in a war, and the belligerent is not also in that war (on the same side),
+                //  then merge the two
+                if(bIDs.contains(belligerent.getUUID()) && !bIDs.contains(target.getUUID())) {
+                    // TODO: Is this even a thing we need to check? People can't declare war while they are at war, so is
+                    //  something like this even possible?
+                    c.joinWar(target, Conflict.Side.DEFENDER, NonNullList.withSize(1, Objects.requireNonNull(WarGoalFactory.newWargoal(WarGoalFactory.Goals.WAITOUT_TIMER))));
+                    markDirty();
+                    return;
+                } else if(dIDs.contains(target.getUUID()) && !dIDs.contains(belligerent.getUUID())) {
+                    c.joinWar(belligerent, Conflict.Side.BELLIGERENT, goals);
+                    markDirty();
+                    return;
+                }
+            }
+
             registerConflict(conflict);
             markDirty();
         }
