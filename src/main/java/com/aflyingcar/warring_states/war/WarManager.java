@@ -132,26 +132,32 @@ public final class WarManager extends BaseManager {
 
         if(modifiedPositions != null) {
             for(ExtendedBlockPos pos : modifiedPositions) {
-                Pair<RestorableBlock, Integer> restorablePair = restorableBlockConflictMapping.getOrDefault(pos, null);
-                if(restorablePair == null) {
+                if(!rollbackChangeFor(pos)) {
                     WarringStatesMod.getLogger().error("Have position cached for rollback, but no restorable block was found cached with this position! Skipping " + pos);
-                } else {
-                    // Decrease by 1
-                    int newConflictCount = restorablePair.getRight() - 1;
-
-                    // If no more conflicts are tracking this changed position, then restore it
-                    if(newConflictCount <= 0) {
-                        restorablePair.getLeft().restore();
-                        restorableBlockConflictMapping.remove(pos);
-                    } else {
-                        restorableBlockConflictMapping.put(pos, Pair.of(restorablePair.getLeft(), newConflictCount));
-                    }
                 }
             }
         }
 
         conflictModificationMapping.remove(cindex); // Remove from the mapping
         markDirty();
+    }
+
+    public boolean rollbackChangeFor(ExtendedBlockPos pos) {
+        Pair<RestorableBlock, Integer> restorablePair = restorableBlockConflictMapping.getOrDefault(pos, null);
+        if(restorablePair != null) {
+            // Decrease by 1
+            int newConflictCount = restorablePair.getRight() - 1;
+
+            // If no more conflicts are tracking this changed position, then restore it
+            if(newConflictCount <= 0) {
+                restorablePair.getLeft().restore();
+                restorableBlockConflictMapping.remove(pos);
+            } else {
+                restorableBlockConflictMapping.put(pos, Pair.of(restorablePair.getLeft(), newConflictCount));
+            }
+        }
+
+        return restorablePair != null;
     }
 
     public void registerIgnoreBlockBreakPredicate(Predicate<ExtendedBlockPos> ignorePredicate) {
