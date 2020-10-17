@@ -1,6 +1,7 @@
 package com.aflyingcar.warring_states.common;
 
 import com.aflyingcar.warring_states.WarringStatesConfig;
+import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.client.gui.GuiID;
 import com.aflyingcar.warring_states.commands.*;
 import com.aflyingcar.warring_states.states.StateManager;
@@ -11,6 +12,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemElytra;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
@@ -30,8 +32,27 @@ public class CommonProxy {
     public void preinit() {
         if(WarringStatesConfig.shouldBlockModificationOfTileEntitiesBeIgnoredDuringWar) {
             // We want to ignore block placing and breaking during a war for anything that has a tile entity
-            WarManager.getInstance().registerIgnoreBlockBreakPredicate(p -> FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(p.getDimID()).getBlockState(p).getBlock().hasTileEntity(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(p.getDimID()).getBlockState(p)));
-            WarManager.getInstance().registerIgnoreBlockPlacePredicate(p -> FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(p.getDimID()).getBlockState(p).getBlock().hasTileEntity(FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(p.getDimID()).getBlockState(p)));
+            WarManager.getInstance().registerIgnoreBlockBreakPredicate(p -> {
+                World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(p.getDimID());
+                //noinspection ConstantConditions
+                if(world == null) {
+                    WarringStatesMod.getLogger().warn("Got a null world for dimension ID " + p.getDimID());
+                    return false;
+                }
+
+                return world.getBlockState(p).getBlock().hasTileEntity(world.getBlockState(p));
+            });
+
+            WarManager.getInstance().registerIgnoreBlockPlacePredicate(p -> {
+                World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(p.getDimID());
+                //noinspection ConstantConditions
+                if(world == null) {
+                    WarringStatesMod.getLogger().warn("Got a null world for dimension ID " + p.getDimID());
+                    return false;
+                }
+
+                return world.getBlockState(p).getBlock().hasTileEntity(world.getBlockState(p));
+            });
         }
     }
 
