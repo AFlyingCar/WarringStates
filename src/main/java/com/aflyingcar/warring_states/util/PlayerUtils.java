@@ -54,6 +54,6 @@ public class PlayerUtils {
     }
 
     public static boolean isPlayerOnline(UUID playerID) {
-        return getPlayerByUUID(playerID) == null;
+        return getPlayerByUUID(playerID) != null;
     }
 }
