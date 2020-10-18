@@ -252,9 +252,14 @@ public class StateManagementGui extends GuiScreen {
                 return I18n.format("warring_states.tooltip.manage_applications", "" + state.getAllApplications().size());
             case REVOKE_CITIZENSHIP:
                 return I18n.format("warring_states.tooltip.revoke_citizenship");
+            case DECLARE_WAR:
+                if(state.isAtWar()) {
+                    return I18n.format("warring_states.tooltip.already_at_war");
+                } else {
+                    return I18n.format("warring_states.tooltip.declare_war", "" + state.getWargoalTargets().size());
+                }
             case MANAGE_CITIZENS:
             case RESCIND_CLAIM:
-            case DECLARE_WAR:
             case CHANGE_NAME:
             case CHANGE_DESC:
             case VIEW_CURRENT_CONFLICTS:
@@ -298,7 +303,7 @@ public class StateManagementGui extends GuiScreen {
                 break;
             case DECLARE_WAR:
                 // TODO: We should have a tooltip for this button if this State is already at war to admonish them for being such a warmonger
-                NetworkUtils.sendTrackedMessage(new RequestAllValidWarrableStatesMessage(state.getUUID(), player.getPersistentID()), message -> mc.displayGuiScreen(new ListValidWarrableStatesGui(player, this, ((DeliverAllValidWarrableStatesMessage)message).getWargoals())));
+                NetworkUtils.sendTrackedMessage(new RequestAllValidWarrableStatesMessage(state.getUUID(), player.getPersistentID()), message -> mc.displayGuiScreen(new ListValidWarrableStatesGui(player, this, ((DeliverAllValidWarrableStatesMessage)message).getWarrableStates())));
                 break;
             case CHANGE_NAME:
                 mc.displayGuiScreen(new EditStringGui(this, player, newName -> {

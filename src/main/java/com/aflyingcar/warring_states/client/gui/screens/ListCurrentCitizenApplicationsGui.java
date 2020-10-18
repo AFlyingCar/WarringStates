@@ -88,6 +88,8 @@ public class ListCurrentCitizenApplicationsGui extends GuiScreen {
 
         // TODO: draw GUI background
 
+        drawString(fontRenderer, GuiUtils.translate("manage_applications"), width / 2 - GuiUtils.getTranslatedStringWidth(fontRenderer, "manage_applications") / 2, applicationsGui.top - 20, 0xFFFFFF);
+
         applicationsGui.drawScreen(mouseX, mouseY, partialTicks);
 
         GlStateManager.disableBlend();

@@ -2,6 +2,7 @@ package com.aflyingcar.warring_states.client.gui.screens;
 
 import com.aflyingcar.warring_states.api.CitizenPrivileges;
 import com.aflyingcar.warring_states.client.gui.parts.ListGui;
+import com.aflyingcar.warring_states.util.GuiUtils;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -39,6 +40,8 @@ public class ListCurrentCitizensGui extends GuiScreen {
         drawDefaultBackground();
 
         // TODO: draw GUI background
+
+        drawString(fontRenderer, GuiUtils.translate("citizen_management"), width / 2 - GuiUtils.getTranslatedStringWidth(fontRenderer, "citizen_management") / 2, citizenListGui.top - 20, 0xFFFFFF);
 
         citizenListGui.drawScreen(mouseX, mouseY, partialTicks);
 
