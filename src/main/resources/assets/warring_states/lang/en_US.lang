@@ -55,6 +55,8 @@ warring_states.tooltip.not_enough_privileges=You do not have the correct privile
 warring_states.tooltip.dissolve_cannot_be_undone=You cannot undo this action!
 warring_states.tooltip.manage_applications=%s applications are currently waiting.
 warring_states.tooltip.revoke_citizenship=You will need to renew your citizenship if you do this!
+warring_states.tooltip.declare_war=Your state has wargoals against %s other states.
+warring_states.tooltip.already_at_war=You are already at war with another State. Finish that one first you warmonger.
 
 # Gui Strings
 warring_states.gui.state.citizenship_apply=Are you sure you want to apply for citizenship with %s?
