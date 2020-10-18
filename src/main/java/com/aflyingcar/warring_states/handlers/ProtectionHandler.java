@@ -25,7 +25,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
@@ -137,7 +136,7 @@ public class ProtectionHandler {
             // But first, if somebody owns this position, and the player is not part of the that state, then they are only
             //  allowed to modify blocks if they are a part of a conflict that this state is in
             if(owningState != null && !owningState.hasCitizen(player.getPersistentID())) {
-                int dimension = WorldUtils.getDimensionIDForWorld((WorldServer) event.getWorld());
+                int dimension = WorldUtils.getDimensionIDForWorld(event.getWorld());
                 Pair<Integer, Conflict> currentConflict = WarManager.getInstance().getConflictBetween(player, owningState);
                 if(currentConflict != null) {
                     ExtendedBlockPos extendedPosition = new ExtendedBlockPos(event.getPos(), dimension);
@@ -249,7 +248,7 @@ public class ProtectionHandler {
                     // But first, if somebody owns this position, and the player is not part of the that state, then they are only
                     //  allowed to place blocks if they are a part of a conflict that this state is in
                     if(owningState != null && !owningState.hasCitizen(entity.getPersistentID())) {
-                        int dimension = WorldUtils.getDimensionIDForWorld((WorldServer) event.getWorld());
+                        int dimension = WorldUtils.getDimensionIDForWorld(event.getWorld());
                         Pair<Integer, Conflict> currentConflict = WarManager.getInstance().getConflictBetween(player, owningState);
                         if(currentConflict != null) {
                             ExtendedBlockPos extendedPosition = new ExtendedBlockPos(event.getPos(), dimension);
@@ -492,7 +491,7 @@ public class ProtectionHandler {
         BlockPos explosionPosition = new BlockPos(event.getExplosion().getPosition());
 
         List<BlockPos> affected = event.getAffectedBlocks();
-        int dimension = WorldUtils.getDimensionIDForWorld((WorldServer)event.getWorld());
+        int dimension = WorldUtils.getDimensionIDForWorld(event.getWorld());
 
         for(Iterator<BlockPos> affectedPositionIter = affected.listIterator(); affectedPositionIter.hasNext();) {
             BlockPos affectedPosition = affectedPositionIter.next();
