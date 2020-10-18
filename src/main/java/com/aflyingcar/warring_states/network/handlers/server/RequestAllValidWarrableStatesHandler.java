@@ -7,12 +7,13 @@ import com.aflyingcar.warring_states.network.messages.RequestAllValidWarrableSta
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.util.PlayerUtils;
+import com.aflyingcar.warring_states.util.WarrableState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class RequestAllValidWarrableStatesHandler implements IMessageHandler<RequestAllValidWarrableStatesMessage, DeliverAllValidWarrableStatesMessage> {
@@ -37,10 +38,19 @@ public class RequestAllValidWarrableStatesHandler implements IMessageHandler<Req
 
         WarringStatesMod.getLogger().info("Delivering all valid warrable states.");
 
+        return (DeliverAllValidWarrableStatesMessage) new DeliverAllValidWarrableStatesMessage(state.getWargoals().entrySet().stream().map(e -> {
+            State s = StateManager.getInstance().getStateFromUUID(e.getKey());
+            if(s == null) return null;
+
+            return new WarrableState(s.getName(), e.getKey(), s.getCitizens().stream().filter(PlayerUtils::isPlayerOnline).collect(Collectors.toList()), e.getValue());
+        }).filter(Objects::nonNull).collect(Collectors.toList())).setUUID(message.getUUID());
+
+        /*
         // A state can only be declared war upon _if_ there is at least one player online at the time the war is declared
         return (DeliverAllValidWarrableStatesMessage) new DeliverAllValidWarrableStatesMessage(state.getWargoals().entrySet().stream().filter(e -> {
             State s = StateManager.getInstance().getStateFromUUID(e.getKey());
-            return s != null && s.getCitizens().stream().allMatch(PlayerUtils::isPlayerOnline);
+            return s != null && s.getCitizens().stream().anyMatch(PlayerUtils::isPlayerOnline);
         }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))).setUUID(message.getUUID());
+         */
     }
 }

@@ -1,49 +1,37 @@
 package com.aflyingcar.warring_states.network.messages;
 
-import com.aflyingcar.warring_states.api.IWarGoal;
-import com.aflyingcar.warring_states.states.DummyState;
-import com.aflyingcar.warring_states.states.State;
-import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.util.NetworkUtils;
 import com.aflyingcar.warring_states.util.TrackedMessage;
+import com.aflyingcar.warring_states.util.WarrableState;
 import io.netty.buffer.ByteBuf;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.List;
 
 public class DeliverAllValidWarrableStatesMessage extends TrackedMessage {
-    private Map<DummyState, Integer> wargoals;
+    private List<WarrableState> warrableStates;
 
     public DeliverAllValidWarrableStatesMessage() {
     }
 
-    public DeliverAllValidWarrableStatesMessage(Map<UUID, Set<IWarGoal>> wargoals) {
-        this.wargoals = new HashMap<>();
-        for(Map.Entry<UUID, Set<IWarGoal>> entry : wargoals.entrySet()) {
-            State s = StateManager.getInstance().getStateFromUUID(entry.getKey());
-            if(s != null) {
-                this.wargoals.put(new DummyState(s), entry.getValue().size());
-            }
-        }
+    public DeliverAllValidWarrableStatesMessage(List<WarrableState> warrableStates) {
+        this.warrableStates = warrableStates;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         super.fromBytes(buf);
 
-        wargoals = NetworkUtils.readMap(buf, DummyState::readStateData, ByteBuf::readInt);
+        warrableStates = NetworkUtils.readList(buf, WarrableState::createFromBuf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         super.toBytes(buf);
 
-        NetworkUtils.writeMap(buf, wargoals, (byteBuf, dummyState) -> dummyState.writeData(byteBuf), ByteBuf::writeInt);
+        NetworkUtils.writeCollection(buf, warrableStates, NetworkUtils::writeNetSerializable);
     }
 
-    public Map<DummyState, Integer> getWargoals() {
-        return wargoals;
+    public List<WarrableState> getWarrableStates() {
+        return warrableStates;
     }
 }
