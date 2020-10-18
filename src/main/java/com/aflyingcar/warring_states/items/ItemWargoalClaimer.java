@@ -16,7 +16,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -40,7 +39,7 @@ public class ItemWargoalClaimer extends Item {
         }
 
         ChunkPos chunkPos = world.getChunk(player.getPosition()).getPos();
-        WarringStatesAPI.claimStealChunkWargoal(player, playerState, owningState, chunkPos, WorldUtils.getDimensionIDForWorld((WorldServer)world));
+        WarringStatesAPI.claimStealChunkWargoal(player, playerState, owningState, chunkPos, WorldUtils.getDimensionIDForWorld(world));
 
         return true;
     }
