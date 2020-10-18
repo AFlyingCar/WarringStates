@@ -37,6 +37,10 @@ public class ConfirmActionGui extends GuiScreen {
         mc.displayGuiScreen(new GuiYesNo(this, message, "", 0));
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     @Override
     public void confirmClicked(boolean result, int id) {
         if(result) {
