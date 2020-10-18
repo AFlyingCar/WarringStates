@@ -21,7 +21,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -192,7 +191,7 @@ public class WarringStatesAPI {
 
         StateManager.getInstance().removeState(state);
 
-        int dimID = WorldUtils.getDimensionIDForWorld((WorldServer)player.getEntityWorld());
+        int dimID = WorldUtils.getDimensionIDForWorld(player.getEntityWorld());
 
         for(ChunkPos pos : state.getClaimedTerritory()) {
             // Find every tile entity that has the same UUID as the given state and destroy it
