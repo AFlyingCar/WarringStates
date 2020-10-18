@@ -3,6 +3,7 @@ package com.aflyingcar.warring_states.util;
 import com.aflyingcar.warring_states.WarringStatesBlocks;
 import com.aflyingcar.warring_states.blocks.BlockClaimer;
 import com.aflyingcar.warring_states.states.DummyState;
+import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
 import com.google.common.base.Predicate;
@@ -15,14 +16,12 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -126,10 +125,8 @@ public class WorldUtils {
      * @param world The world
      * @return The dimension ID of the world.
      */
-    public static int getDimensionIDForWorld(WorldServer world) {
-        WorldServer[] worlds = FMLCommonHandler.instance().getMinecraftServerInstance().worlds;
-
-        return Arrays.asList(worlds).indexOf(world);
+    public static int getDimensionIDForWorld(World world) {
+        return world.provider.getDimension();
     }
 
     /**
@@ -160,8 +157,17 @@ public class WorldUtils {
      * @return true if the claimer was destroyed, false otherwise
      */
     public static boolean destroyClaimer(World world, BlockPos position) {
-        if(!(world.getTileEntity(position) instanceof TileEntityClaimer)) {
+        TileEntity te = world.getTileEntity(position);
+        if(!(te instanceof TileEntityClaimer)) {
             return false;
+        }
+
+        if(!world.isRemote) {
+            State state = StateManager.getInstance().getStateFromUUID(((TileEntityClaimer) te).getStateUUID());
+
+            if(state != null) {
+                state.unclaimTerritory(getChunkFor(world, position).getPos(), getDimensionIDForWorld(world));
+            }
         }
 
         // world.playSound(null, position, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 0.1f, 0.7f);
@@ -191,7 +197,7 @@ public class WorldUtils {
     }
 
     public static ExtendedBlockPos getExtendedPosition(World world, BlockPos pos) {
-        return new ExtendedBlockPos(pos, getDimensionIDForWorld((WorldServer)world));
+        return new ExtendedBlockPos(pos, getDimensionIDForWorld(world));
     }
 
     public static BlockPos offsetBlockPos(@Nonnull BlockPos position, @Nullable EnumFacing side) {
