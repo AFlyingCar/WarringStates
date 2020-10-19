@@ -41,9 +41,13 @@ public class Timer implements ISerializable {
     public void start() {
         if(started) return;
 
-        currentTick = 0;
+        reset();
         timers.add(this);
         started = true;
+    }
+
+    public void reset() {
+        currentTick = 0;
     }
 
     public void stop() {
