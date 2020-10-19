@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class NBTUtils {
@@ -185,5 +186,15 @@ public class NBTUtils {
         }
 
         return map;
+    }
+
+    public static NBTTagCompound serializeUUID(UUID uuid) {
+        NBTTagCompound nbt = new NBTTagCompound();
+        nbt.setUniqueId("uuid", uuid);
+        return nbt;
+    }
+
+    public static UUID deserializeUUID(NBTTagCompound uuidTag) {
+        return uuidTag.getUniqueId("uuid");
     }
 }
