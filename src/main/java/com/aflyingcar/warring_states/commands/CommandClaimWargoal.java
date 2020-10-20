@@ -6,6 +6,7 @@ import com.aflyingcar.warring_states.api.WarringStatesAPI;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.util.WorldUtils;
+import com.aflyingcar.warring_states.war.goals.DefaultWargoalClaimers;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -59,6 +60,6 @@ public class CommandClaimWargoal extends CommandBase {
             return;
         }
 
-        WarringStatesAPI.claimStealChunkWargoal((EntityPlayer) sender, state, owningState, chunkPos, WorldUtils.getDimensionIDForWorld(world));
+        DefaultWargoalClaimers.claimStealChunkWargoal((EntityPlayer) sender, state, owningState, chunkPos, WorldUtils.getDimensionIDForWorld(world));
     }
 }
