@@ -17,8 +17,9 @@ warring_states.messages.cannnot_claim_from_enemy=You cannot claim territory from
 warring_states.messages.cannot_claim_capital=You cannot claim somebody else's capital.
 warring_states.messages.cannot_capture_without_wargoal=You cannot capture territory without a wargoal.
 warring_states.messages.cannot_steal_own_territory=You cannot steal your own territory. How would that even work?
-warring_states.messages.cannot_steal_from_nobody=You cannot steal territory that nobody owns.
-warring_states.messages.cannot_steal_for_nobody=You cannot steal territory if you are not a member of a State.
+warring_states.messages.cannot_claim_own_goal=You cannot claim a wargoal against your own State.
+warring_states.messages.cannot_steal_from_nobody=You cannot claim a wargoal in a chunk that nobody owns.
+warring_states.messages.cannot_steal_for_nobody=You cannot claim a wargoal if you are not a member of a State.
 warring_states.messages.rescind_claim.permission_denied=You do not have permission to rescind claims for %s.
 warring_states.messages.management.permission_denied=You do not have persmission to manage State data for %s.
 warring_states.messages.declare_war.nobody_online=You cannot declare war on a State that has nobody online to defend it.
@@ -44,8 +45,9 @@ warring_states.messages.cannot_claim_territory=Unable to claim this chunk becaus
 warring_states.messages.cannot_rescind_capitol=You cannot rescind your claim on your capitol.
 warring_states.messages.no_longer_exposed_to_sky_warning=The claimer for this chunk can no longer see the sky! It will self destruct in %s minutes.
 warring_states.messages.must_be_exposed_to_sky=The claimer must be exposed to the sky.
+warring_states.messages.claim_failure_reason.claiming_too_soon_after_last=Not enough time has passed since the last claim.
 
-warring_states.messages.claim_failure_reason.claiming_too_soon_after_last=not enough time has passed since the last claim
+warring_states.messages.claimed_raid_wargoal=Claimed a raid wargoal against %s.
 
 # Tooltips
 warring_states.tooltip.war_flight_disabled=A strange force prevents this from working properly.
