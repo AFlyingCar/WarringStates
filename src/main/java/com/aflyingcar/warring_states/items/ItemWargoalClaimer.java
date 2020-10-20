@@ -24,7 +24,7 @@ public class ItemWargoalClaimer extends Item {
 
     public ItemWargoalClaimer() {
         setTranslationKey(TRANSLATION_KEY);
-        setMaxDamage(0);
+        setMaxDamage(Integer.MAX_VALUE);
         setMaxStackSize(1);
         setCreativeTab(CreativeTab.TAB);
         setRegistryName(WarringStatesMod.MOD_ID, TRANSLATION_KEY);
@@ -37,6 +37,11 @@ public class ItemWargoalClaimer extends Item {
         }
 
         return WarringStatesAPI.claimWargoal(goalType, player, playerState, owningState, world);
+    }
+
+    private int getAdjustedWargoalType(int goalType) {
+        int registeredTypes = WarringStatesAPI.getRegisteredWargoals().size();
+        return registeredTypes > 0 ? (goalType % registeredTypes) : 0;
     }
 
     @Override
@@ -52,7 +57,7 @@ public class ItemWargoalClaimer extends Item {
             // If we are sneaking, then change the type of wargoal we are trying to claim
             if(playerIn.isSneaking()) {
                 // Modulus so that it wraps back around
-                wargoalClaimerStack.setItemDamage((goalType + 1) % WarringStatesAPI.getRegisteredWargoals().size());
+                wargoalClaimerStack.setItemDamage(getAdjustedWargoalType(goalType + 1));
                 return new ActionResult<>(EnumActionResult.SUCCESS, playerIn.getHeldItem(handIn));
             }
 
@@ -65,7 +70,7 @@ public class ItemWargoalClaimer extends Item {
 
             // Actually attempt to claim the wargoal now
             // Modulus it again (just to be safe) and add 1 to it to shift it up and make it 1 indexed rather than 0 indexed
-            if(!claimWargoal((goalType % WarringStatesAPI.getRegisteredWargoals().size()) + 1, playerIn, playerState, worldIn)) {
+            if(!claimWargoal(getAdjustedWargoalType(goalType) + 1, playerIn, playerState, worldIn)) {
                 playerIn.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_steal_from_nobody"));
                 return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(handIn));
             } else {

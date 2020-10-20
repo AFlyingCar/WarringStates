@@ -59,12 +59,13 @@ public class CommonProxy {
                 return world.getBlockState(p).getBlock().hasTileEntity(world.getBlockState(p));
             });
         }
+
+        registerDefaultWargoalClaimers();
     }
 
     public void init() {
         registerDefaultFlyingCheckAndConsumers();
         registerDefaultDoesItemAllowFlightPredicates();
-        registerDefaultWargoalClaimers();
     }
 
     public void postinit() { }
