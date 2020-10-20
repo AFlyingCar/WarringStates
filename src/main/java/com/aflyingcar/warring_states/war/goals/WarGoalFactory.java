@@ -8,7 +8,7 @@ public class WarGoalFactory {
     public static IWarGoal newWargoal(NBTTagCompound tagCompound) {
         int _id = tagCompound.getInteger("_id");
 
-        IWarGoal goal = newWargoal(Goals.fromInt(_id));
+        IWarGoal goal = newWargoal(_id);
         if(goal != null) {
             goal.readNBT(tagCompound);
         }
@@ -18,12 +18,17 @@ public class WarGoalFactory {
     public static IWarGoal newWargoal(ByteBuf buf) {
         int _id = buf.readInt();
 
-        IWarGoal goal = newWargoal(Goals.fromInt(_id));
+        IWarGoal goal = newWargoal(_id);
+
         if(goal != null) {
             goal.readFromBuf(buf);
         }
 
         return goal;
+    }
+
+    public static IWarGoal newWargoal(int id) {
+        return newWargoal(Goals.fromInt(id));
     }
 
     public static IWarGoal newWargoal(Goals goal) {
@@ -32,15 +37,22 @@ public class WarGoalFactory {
                 return new StealChunkWarGoal();
             case WAITOUT_TIMER:
                 return new WaitoutTimerWarGoal();
+            case RAID:
+                return new RaidWarGoal();
             case INVALID:
             default:
                 return null;
         }
     }
 
+    // TODO: This needs to be replaced with a more extensible solution
     public enum Goals {
         INVALID,
         STEAL_CHUNK,
+        RAID,
+
+        // UNCLAIMABLE WARGOALS
+
         WAITOUT_TIMER,
         ;
 

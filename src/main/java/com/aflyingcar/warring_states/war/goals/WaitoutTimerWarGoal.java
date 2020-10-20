@@ -8,15 +8,16 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class WaitoutTimerWarGoal implements IWarGoal {
+    @Override
+    public void onWarStarted(Conflict war, State owner) { }
 
     @Override
-    public void update(float dt) {
-
-    }
+    public void update(float dt) { }
 
     @Override
     public boolean accomplished(Conflict war) {
@@ -30,6 +31,12 @@ public class WaitoutTimerWarGoal implements IWarGoal {
     public boolean canBeDeclared(EntityPlayer declarer) {
         // Cannot be declared by anybody, is given automatically
         return false;
+    }
+
+    @Nonnull
+    @Override
+    public IWarGoal createOpposingWargoal() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("WaitoutTimerWarGoal can only be created as an opposing wargoal.");
     }
 
     @Override

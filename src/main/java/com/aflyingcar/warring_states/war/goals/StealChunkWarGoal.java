@@ -13,11 +13,11 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
@@ -51,6 +51,9 @@ public class StealChunkWarGoal implements IWarGoal {
     public void accomplish() {
         accomplished = true;
     }
+
+    @Override
+    public void onWarStarted(Conflict war, State owner) { }
 
     @SideOnly(Side.SERVER)
     @Override
@@ -104,7 +107,7 @@ public class StealChunkWarGoal implements IWarGoal {
             if(declarerState == null) return false;
             State target = StateManager.getInstance().getStateAtPosition(declarer.world, declarer.getPosition());
             if(target == null) return false;
-            int dimension = WorldUtils.getDimensionIDForWorld((WorldServer)declarer.world);
+            int dimension = WorldUtils.getDimensionIDForWorld(declarer.world);
             return checkWargoalAgainstOtherWargoals(declarerState.getWargoals().get(target.getUUID()), declarerChunk) ||
                    WorldUtils.doesChunkBorderWilderness(declarerChunk, dimension) || WorldUtils.doesChunkBorderState(declarerChunk, dimension);
         }
@@ -115,6 +118,12 @@ public class StealChunkWarGoal implements IWarGoal {
     @Override
     public boolean canBeDeclared(EntityPlayer declarer) {
         return canWargoalBeDeclared(declarer);
+    }
+
+    @Nonnull
+    @Override
+    public IWarGoal createOpposingWargoal() {
+        return new WaitoutTimerWarGoal();
     }
 
     @Override
