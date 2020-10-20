@@ -318,7 +318,10 @@ public class StateManagementGui extends GuiScreen {
                 }, id.getKey(), state.getDesc()));
                 break;
             case DISSOLVE_STATE:
-                mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> WarringStatesNetwork.NETWORK.sendToServer(new DissolveStateMessage(state.getUUID(), player.getPersistentID())), null, "warring_states.gui." + id.getKey() + "_confirmation", state.getName()));
+                mc.displayGuiScreen(new ConfirmActionGui(this, player, () -> {
+                    WarringStatesNetwork.NETWORK.sendToServer(new DissolveStateMessage(state.getUUID(), player.getPersistentID()));
+                    player.closeScreen(); // TODO: We should probably only close the GUI if the dissolution worked
+                }, null, "warring_states.gui." + id.getKey() + "_confirmation", state.getName()));
                 break;
             case VIEW_CURRENT_CONFLICTS:
                 NetworkUtils.sendTrackedMessage(new RequestConflictListMessage(), message -> mc.displayGuiScreen(new ListCurrentConflictsGui(this, ((DeliverConflictListMessage)message).getConflicts())));
