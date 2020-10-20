@@ -11,7 +11,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 
 import javax.annotation.Nonnull;
@@ -94,7 +93,7 @@ public final class StateManager extends BaseManager {
     public State getStateAtPosition(World world, BlockPos pos) {
         Chunk c = world.getChunk(pos);
 
-        return getStateAtPosition(c.getPos(), WorldUtils.getDimensionIDForWorld((WorldServer)world));
+        return getStateAtPosition(c.getPos(), WorldUtils.getDimensionIDForWorld(world));
     }
 
     @Nullable
