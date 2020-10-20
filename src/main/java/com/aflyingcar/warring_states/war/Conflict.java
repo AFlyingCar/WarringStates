@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a conflict between two sides
@@ -49,7 +50,7 @@ public class Conflict implements ISerializable {
         this.warStartTimer = new Timer();
 
         this.defenders.put(defender, NonNullList.create());
-        this.defenders.get(defender).add(Objects.requireNonNull(WarGoalFactory.newWargoal(WarGoalFactory.Goals.WAITOUT_TIMER)));
+        belligerentGoals.forEach(g -> defenders.get(defender).add(g.createOpposingWargoal()));
 
         this.belligerents.put(belligerent, belligerentGoals);
     }
@@ -173,6 +174,11 @@ public class Conflict implements ISerializable {
      */
     public void forceSetWinner(Side side) {
         forcedWinner = side;
+    }
+
+    public List<IWarGoal> getWargoals() {
+        return Stream.concat(defenders.values().parallelStream().flatMap(Collection::parallelStream),
+                             belligerents.values().parallelStream().flatMap(Collection::parallelStream)).collect(Collectors.toList());
     }
 
     /**
