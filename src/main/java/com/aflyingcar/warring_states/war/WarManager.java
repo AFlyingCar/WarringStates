@@ -356,7 +356,7 @@ public final class WarManager extends BaseManager {
     public boolean canParticipateInWar(State state) {
         Timer timer = warWaitTimers.getOrDefault(state.getUUID(), null);
 
-        if(timer == null || timer.getNumberOfHours() > WarringStatesConfig.numHoursBetweenWarAttempts) {
+        if(timer == null || timer.getNumberOfHours() >= WarringStatesConfig.numHoursBetweenWarAttempts) {
             warWaitTimers.remove(state.getUUID());
             return true;
         } else {
@@ -418,6 +418,7 @@ public final class WarManager extends BaseManager {
 
         // Allow war declaration to be cancelled
         if(!MinecraftForge.EVENT_BUS.post(new WarDeclaredEvent(conflict))) {
+
             for(Conflict c : conflicts) {
                 Set<UUID> bIDs = c.getBelligerents().keySet().stream().map(State::getUUID).collect(Collectors.toSet());
                 Set<UUID> dIDs = c.getDefenders().keySet().stream().map(State::getUUID).collect(Collectors.toSet());
@@ -429,15 +430,22 @@ public final class WarManager extends BaseManager {
                 if(bIDs.contains(belligerent.getUUID()) && !bIDs.contains(target.getUUID())) {
                     // TODO: Is this even a thing we need to check? People can't declare war while they are at war, so is
                     //  something like this even possible?
+                    goals.forEach(g -> g.onWarStarted(c, belligerent));
                     c.joinWar(target, Conflict.Side.DEFENDER, NonNullList.withSize(1, Objects.requireNonNull(WarGoalFactory.newWargoal(WarGoalFactory.Goals.WAITOUT_TIMER))));
                     markDirty();
                     return;
                 } else if(dIDs.contains(target.getUUID()) && !dIDs.contains(belligerent.getUUID())) {
+                    goals.forEach(g -> g.onWarStarted(c, belligerent));
                     c.joinWar(belligerent, Conflict.Side.BELLIGERENT, goals);
                     markDirty();
                     return;
                 }
             }
+
+            // Make sure to call onWarStarted for both the belligerent _and_ the defender here
+            // Only need to call it for defenders down here because this is for when a war is started for the first time
+            goals.forEach(g -> g.onWarStarted(conflict, belligerent));
+            conflict.getWargoalsForSide(Conflict.Side.DEFENDER).forEach(g -> g.onWarStarted(conflict, target));
 
             registerConflict(conflict);
             markDirty();
