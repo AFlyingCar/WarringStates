@@ -2,37 +2,32 @@ package com.aflyingcar.warring_states.api;
 
 import com.aflyingcar.warring_states.WarringStatesConfig;
 import com.aflyingcar.warring_states.WarringStatesMod;
-import com.aflyingcar.warring_states.events.WargoalDeclaredEvent;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
-import com.aflyingcar.warring_states.util.ChunkGroup;
 import com.aflyingcar.warring_states.util.ExtendedBlockPos;
 import com.aflyingcar.warring_states.util.PlayerUtils;
+import com.aflyingcar.warring_states.util.QuadFunction;
 import com.aflyingcar.warring_states.util.WorldUtils;
 import com.aflyingcar.warring_states.war.WarManager;
-import com.aflyingcar.warring_states.war.goals.StealChunkWarGoal;
-import com.aflyingcar.warring_states.war.goals.WarGoalFactory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class WarringStatesAPI {
+    private static Map<Integer, QuadFunction<EntityPlayer, State, State, World, Boolean>> registeredWargoals = new HashMap<>();
+
     public static boolean doesPlayerHavePermissionForAction(@Nonnull World world, @Nonnull UUID uuid, @Nonnull BlockPos position, @Nullable EnumFacing side, int actionPrivileges) {
         return doesPlayerHavePermissionForAction(world, uuid, WorldUtils.offsetBlockPos(position, side), actionPrivileges);
     }
@@ -144,44 +139,6 @@ public class WarringStatesAPI {
     }
 
     @SideOnly(Side.SERVER)
-    public static void claimStealChunkWargoal(@Nonnull EntityPlayer player, @Nonnull State futureBelligerent, @Nonnull State currentOwner, @Nonnull ChunkPos chunkPos, int dimension) {
-        if(WarManager.getInstance().isAtWarWith(futureBelligerent, currentOwner)) {
-            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannnot_claim_from_enemy"));
-            return;
-        }
-
-        ChunkGroup capital = currentOwner.getCapital();
-        if(capital != null && capital.containsChunk(chunkPos, dimension)) {
-            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_claim_capital"));
-            return;
-        }
-
-        if(futureBelligerent.equals(currentOwner)) {
-            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_steal_own_territory"));
-            return;
-        }
-
-        StealChunkWarGoal goal = Objects.requireNonNull((StealChunkWarGoal) WarGoalFactory.newWargoal(WarGoalFactory.Goals.STEAL_CHUNK));
-
-        goal.setChunk(chunkPos);
-        goal.setDimension(dimension);
-
-        if(!goal.canBeDeclared(player)) {
-            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_declare", "Steal Chunk"));
-            return;
-        }
-
-        // Allow the wargoal event to be explicitly intercepted and cancelled if necessary
-        if(!MinecraftForge.EVENT_BUS.post(new WargoalDeclaredEvent(goal))) {
-            futureBelligerent.declareWargoal(currentOwner.getUUID(), goal);
-
-            player.sendMessage(new TextComponentString("Claimed chunk " + chunkPos + " as a wargoal for " + futureBelligerent.getName()));
-        } else {
-            WarringStatesMod.getLogger().info("Wargoal declaration cancelled.");
-        }
-    }
-
-    @SideOnly(Side.SERVER)
     public static void dissolveState(@Nonnull State state, @Nonnull EntityPlayer player) {
         if(!WarringStatesConfig.allowDissolvingStatesWithMembers && state.getCitizens().size() > 1) {
             player.sendMessage(new TextComponentTranslation("warring_states.messages.server_disallows_dissolving_states_with_members"));
@@ -225,5 +182,17 @@ public class WarringStatesAPI {
             appliedPlayer.sendMessage(new TextComponentTranslation("warring_states.messages.application.rejected", state.getName(), rejectorName == null ? "" : rejectorName));
         }
         WarringStatesMod.getLogger().info("Rejected application for " + applierPlayerID + " to " + state.getName());
+    }
+
+    public static boolean claimWargoal(int goalType, EntityPlayer player, State playerState, State owningState, World world) {
+        return registeredWargoals.getOrDefault(goalType, (p1,p2,p3,p4) ->  false).apply(player, playerState, owningState, world);
+    }
+
+    public static void registerWargoalClaimer(int goalType, QuadFunction<EntityPlayer, State, State, World, Boolean> claimerConsumer) {
+        registeredWargoals.put(goalType, claimerConsumer);
+    }
+
+    public static Map<Integer, QuadFunction<EntityPlayer, State, State, World, Boolean>> getRegisteredWargoals() {
+        return registeredWargoals;
     }
 }

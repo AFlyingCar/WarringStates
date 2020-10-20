@@ -2,16 +2,21 @@ package com.aflyingcar.warring_states.common;
 
 import com.aflyingcar.warring_states.WarringStatesConfig;
 import com.aflyingcar.warring_states.WarringStatesMod;
+import com.aflyingcar.warring_states.api.WarringStatesAPI;
 import com.aflyingcar.warring_states.client.gui.GuiID;
 import com.aflyingcar.warring_states.commands.*;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.util.PlayerUtils;
+import com.aflyingcar.warring_states.util.WorldUtils;
 import com.aflyingcar.warring_states.war.WarManager;
+import com.aflyingcar.warring_states.war.goals.DefaultWargoalClaimers;
+import com.aflyingcar.warring_states.war.goals.WarGoalFactory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemElytra;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -59,6 +64,7 @@ public class CommonProxy {
     public void init() {
         registerDefaultFlyingCheckAndConsumers();
         registerDefaultDoesItemAllowFlightPredicates();
+        registerDefaultWargoalClaimers();
     }
 
     public void postinit() { }
@@ -103,6 +109,20 @@ public class CommonProxy {
 
     public void registerDefaultDoesItemAllowFlightPredicates() {
         registerDoesItemAllowFlightPredicate(ItemElytra.class::isInstance);
+    }
+
+    public void registerDefaultWargoalClaimers() {
+        WarringStatesAPI.registerWargoalClaimer(WarGoalFactory.Goals.STEAL_CHUNK.ordinal(), (player, playerState, targetState, world) -> {
+            ChunkPos pos = world.getChunk(player.getPosition()).getPos();
+            DefaultWargoalClaimers.claimStealChunkWargoal(player, playerState, targetState, pos, WorldUtils.getDimensionIDForWorld(world));
+
+            return true;
+        });
+
+        WarringStatesAPI.registerWargoalClaimer(WarGoalFactory.Goals.RAID.ordinal(), ((player, playerState, targetState, world) -> {
+            DefaultWargoalClaimers.claimRaidWargoal(player, playerState, targetState, world);
+            return true;
+        }));
     }
 
     public int getPrivilegesFor(UUID playerUUID) {
