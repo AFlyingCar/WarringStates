@@ -1,0 +1,27 @@
+{
+  "result": {
+    "item": "warring_states:wargoal_claimer",
+    "data": 0,
+    "count": 1
+  },
+  "pattern": [
+    "  r",
+    "iei",
+    "iii"
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "i": {
+      "item": "minecraft:iron_ingot",
+      "data": 0
+    },
+    "e": {
+      "item": "minecraft:ender_pearl",
+      "data": 0
+    },
+    "r": {
+      "item": "minecraft:redstone",
+      "data": 0
+    }
+  }
+}
