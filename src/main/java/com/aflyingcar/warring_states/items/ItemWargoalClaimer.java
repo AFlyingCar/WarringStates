@@ -5,6 +5,7 @@ import com.aflyingcar.warring_states.api.CreativeTab;
 import com.aflyingcar.warring_states.api.WarringStatesAPI;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
+import com.aflyingcar.warring_states.war.WarManager;
 import com.aflyingcar.warring_states.war.goals.WarGoalFactory;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.entity.player.EntityPlayer;
@@ -108,6 +109,12 @@ public class ItemWargoalClaimer extends Item {
 
             if(playerState == null) {
                 playerIn.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_steal_for_nobody", goalType));
+                return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(handIn));
+            }
+
+            // Do not allow us to declare further wargoals while we are at war.
+            if(!WarManager.getInstance().getAllConflictsInvolving(playerState).isEmpty()) {
+                playerIn.sendMessage(new TextComponentTranslation("warring_states.messages.already_at_war"));
                 return new ActionResult<>(EnumActionResult.FAIL, playerIn.getHeldItem(handIn));
             }
 
