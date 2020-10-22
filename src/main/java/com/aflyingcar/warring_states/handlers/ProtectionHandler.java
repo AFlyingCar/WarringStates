@@ -97,6 +97,11 @@ public class ProtectionHandler {
 
         EntityPlayer player = event.getPlayer();
 
+        // Allow the block break to continue regardless of protections if we have a specific exception for it.
+        if(WarringStatesAPI.hasBlockBreakException(event.getPlayer(), event.getWorld(), event.getPos(), event.getState())) {
+            return;
+        }
+
         if(player.isCreative()) {
             // Make sure that claimers cannot be broken _AT ALL_, doing so could cause borkness
             IBlockState blockState = event.getState();

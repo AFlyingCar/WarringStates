@@ -5,11 +5,9 @@ import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
-import com.aflyingcar.warring_states.util.ExtendedBlockPos;
-import com.aflyingcar.warring_states.util.PlayerUtils;
-import com.aflyingcar.warring_states.util.QuadFunction;
-import com.aflyingcar.warring_states.util.WorldUtils;
+import com.aflyingcar.warring_states.util.*;
 import com.aflyingcar.warring_states.war.WarManager;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
@@ -27,6 +25,7 @@ import java.util.stream.Collectors;
 
 public class WarringStatesAPI {
     private static Map<String, QuadFunction<EntityPlayer, State, State, World, Boolean>> registeredWargoals = new HashMap<>();
+    private static List<QuadPredicate<EntityPlayer, World, BlockPos, IBlockState>> registeredBreakExceptions = new ArrayList<>();
 
     public static boolean doesPlayerHavePermissionForAction(@Nonnull World world, @Nonnull UUID uuid, @Nonnull BlockPos position, @Nullable EnumFacing side, int actionPrivileges) {
         return doesPlayerHavePermissionForAction(world, uuid, WorldUtils.offsetBlockPos(position, side), actionPrivileges);
@@ -194,5 +193,13 @@ public class WarringStatesAPI {
 
     public static Map<String, QuadFunction<EntityPlayer, State, State, World, Boolean>> getRegisteredWargoals() {
         return registeredWargoals;
+    }
+
+    public static boolean hasBlockBreakException(EntityPlayer player, World world, BlockPos pos, IBlockState state) {
+        return registeredBreakExceptions.stream().anyMatch(predicate -> predicate.test(player, world, pos, state));
+    }
+
+    public static void registerBlockBreakException(QuadPredicate<EntityPlayer, World, BlockPos, IBlockState> exceptionPredicate) {
+        registeredBreakExceptions.add(exceptionPredicate);
     }
 }
