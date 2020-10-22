@@ -84,11 +84,19 @@ public class WarringStatesConfig {
     @Config.Comment("Minimum amount of experience required for declaring a steal chunk wargoal.")
     public static float minimumExperienceRequiredForStealingChunks = 0;
 
-    @Config.Comment("Used to calculate how much time is needed before another claim can be made. Used with claimWaitTimeMultiplier as: 'base + multiplier * numberOfClaims'")
+    @Config.Comment("Used to calculate how much time is needed before another claim can be made. Used with claimWaitTimeMultiplier as: 'base + claimMultiplier * numberOfClaims'")
+    @Config.RangeInt(min=0)
     public static int baseClaimWaitTime = 1;
 
-    @Config.Comment("Used to calculate how much time is needed before another claim can be made. Used with baseClaimWaitTime as: 'base + multiplier * numberOfClaims'")
+    @Config.Comment("Used to calculate how much time is needed before another claim can be made. Used with baseClaimWaitTime as: 'base + claimMultiplier * numberOfClaims'")
     public static int claimWaitTimeMultiplier = 30;
+
+    @Config.Comment("Should states with more people get a small boost to the amount of territory they can claim?")
+    public static boolean boostStatesWithMorePeople = true;
+
+    @Config.Comment("Used to calculate how much of an effect the number of people in a State has on the growth of that state. Subtracted from equation specified by baseClaimWaitTime as: '(numberOfCitizens * citizenMultiplier) / (numberOfClaims * claimMultiplier)")
+    @Config.RangeInt(min=0)
+    public static int claimCitizenTimeMultiplier = 90;
 
     @Config.Comment("Number of initial claims that are free before the wait time equation takes effect.")
     public static int numFreeClaims = 1;
