@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class WarringStatesAPI {
-    private static Map<Integer, QuadFunction<EntityPlayer, State, State, World, Boolean>> registeredWargoals = new HashMap<>();
+    private static Map<String, QuadFunction<EntityPlayer, State, State, World, Boolean>> registeredWargoals = new HashMap<>();
 
     public static boolean doesPlayerHavePermissionForAction(@Nonnull World world, @Nonnull UUID uuid, @Nonnull BlockPos position, @Nullable EnumFacing side, int actionPrivileges) {
         return doesPlayerHavePermissionForAction(world, uuid, WorldUtils.offsetBlockPos(position, side), actionPrivileges);
@@ -184,15 +184,15 @@ public class WarringStatesAPI {
         WarringStatesMod.getLogger().info("Rejected application for " + applierPlayerID + " to " + state.getName());
     }
 
-    public static boolean claimWargoal(int goalType, EntityPlayer player, State playerState, State owningState, World world) {
+    public static boolean claimWargoal(String goalType, EntityPlayer player, State playerState, State owningState, World world) {
         return registeredWargoals.getOrDefault(goalType, (p1,p2,p3,p4) ->  false).apply(player, playerState, owningState, world);
     }
 
-    public static void registerWargoalClaimer(int goalType, QuadFunction<EntityPlayer, State, State, World, Boolean> claimerConsumer) {
+    public static void registerWargoalClaimer(String goalType, QuadFunction<EntityPlayer, State, State, World, Boolean> claimerConsumer) {
         registeredWargoals.put(goalType, claimerConsumer);
     }
 
-    public static Map<Integer, QuadFunction<EntityPlayer, State, State, World, Boolean>> getRegisteredWargoals() {
+    public static Map<String, QuadFunction<EntityPlayer, State, State, World, Boolean>> getRegisteredWargoals() {
         return registeredWargoals;
     }
 }

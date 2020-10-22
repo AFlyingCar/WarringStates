@@ -128,7 +128,7 @@ public class StealChunkWarGoal implements IWarGoal {
 
     @Override
     public NBTTagCompound writeNBT(NBTTagCompound nbt) {
-        nbt.setInteger("_id", WarGoalFactory.Goals.STEAL_CHUNK.ordinal());
+        nbt.setString("_id", WarGoalFactory.Goals.STEAL_CHUNK.name());
         nbt.setIntArray("chunk", new int[]{ chunk.x, chunk.z });
         nbt.setInteger("dimension", dimension);
 
@@ -145,7 +145,7 @@ public class StealChunkWarGoal implements IWarGoal {
 
     @Override
     public void writeToBuf(ByteBuf buf) {
-        buf.writeInt(WarGoalFactory.Goals.STEAL_CHUNK.ordinal());
+        NetworkUtils.writeString(buf, WarGoalFactory.Goals.STEAL_CHUNK.name());
         NetworkUtils.writeChunkPos(buf, chunk);
         buf.writeInt(dimension);
         buf.writeBoolean(accomplished);

@@ -71,6 +71,7 @@ public class WarringStatesMod {
         side = event.getSide();
 
         proxy.preinit();
+        proxy.registerDefaultWargoalClaimers();
 
         GameRegistry.registerTileEntity(TileEntityClaimer.class, new ResourceLocation(MOD_ID, BlockClaimer.NAME));
 

@@ -59,8 +59,6 @@ public class CommonProxy {
                 return world.getBlockState(p).getBlock().hasTileEntity(world.getBlockState(p));
             });
         }
-
-        registerDefaultWargoalClaimers();
     }
 
     public void init() {
@@ -113,14 +111,14 @@ public class CommonProxy {
     }
 
     public void registerDefaultWargoalClaimers() {
-        WarringStatesAPI.registerWargoalClaimer(WarGoalFactory.Goals.STEAL_CHUNK.ordinal(), (player, playerState, targetState, world) -> {
+        WarringStatesAPI.registerWargoalClaimer(WarGoalFactory.Goals.STEAL_CHUNK.name(), (player, playerState, targetState, world) -> {
             ChunkPos pos = world.getChunk(player.getPosition()).getPos();
             DefaultWargoalClaimers.claimStealChunkWargoal(player, playerState, targetState, pos, WorldUtils.getDimensionIDForWorld(world));
 
             return true;
         });
 
-        WarringStatesAPI.registerWargoalClaimer(WarGoalFactory.Goals.RAID.ordinal(), ((player, playerState, targetState, world) -> {
+        WarringStatesAPI.registerWargoalClaimer(WarGoalFactory.Goals.RAID.name(), ((player, playerState, targetState, world) -> {
             DefaultWargoalClaimers.claimRaidWargoal(player, playerState, targetState, world);
             return true;
         }));

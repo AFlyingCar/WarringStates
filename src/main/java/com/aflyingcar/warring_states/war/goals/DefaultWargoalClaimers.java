@@ -33,7 +33,7 @@ public class DefaultWargoalClaimers {
         }
 
         if(futureBelligerent.equals(currentOwner)) {
-            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_steal_own_territory"));
+            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_claim_own_goal", WarGoalFactory.Goals.STEAL_CHUNK.name()));
             return;
         }
 
@@ -65,7 +65,7 @@ public class DefaultWargoalClaimers {
         }
 
         if(futureBelligerent.equals(targetState)) {
-            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_claim_own_goal"));
+            player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_claim_own_goal", WarGoalFactory.Goals.RAID.name()));
             return;
         }
 

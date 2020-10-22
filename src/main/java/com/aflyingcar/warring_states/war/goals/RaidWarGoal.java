@@ -80,6 +80,8 @@ public class RaidWarGoal implements IWarGoal {
 
     @Override
     public void writeToBuf(ByteBuf buf) {
+        NetworkUtils.writeString(buf, WarGoalFactory.Goals.RAID.name());
+
         NetworkUtils.writeCollection(buf, livingPlayers, NetworkUtils::writeUUID);
         // NetworkUtils.writeCollection(buf, deadPlayers, NetworkUtils::writeUUID);
         buf.writeInt(side.ordinal());
@@ -94,6 +96,8 @@ public class RaidWarGoal implements IWarGoal {
 
     @Override
     public NBTTagCompound writeNBT(NBTTagCompound nbt) {
+        nbt.setString("_id", WarGoalFactory.Goals.RAID.name());
+
         nbt.setTag("livingPlayers", NBTUtils.serializeCollection(livingPlayers, NBTUtils::serializeUUID));
         nbt.setTag("deadPlayers", NBTUtils.serializeCollection(deadPlayers, NBTUtils::serializeUUID));
         nbt.setInteger("side", side.ordinal());
