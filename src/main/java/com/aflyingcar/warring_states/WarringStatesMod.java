@@ -103,6 +103,8 @@ public class WarringStatesMod {
         WarringStatesNetwork.registerClientMessage(DeliverAllValidWarrableStatesHandler.class, DeliverAllValidWarrableStatesMessage.class);
         WarringStatesNetwork.registerClientMessage(DeliverStateCitizenApplicationListHandler.class, DeliverStateCitizenApplicationListMessage.class);
         WarringStatesNetwork.registerClientMessage(DeliverFullStateInformationHandler.class, DeliverFullStateInformationMessage.class);
+        WarringStatesNetwork.registerClientMessage(WarDeclaredHandler.class, WarDeclaredMessage.class);
+        WarringStatesNetwork.registerClientMessage(WarCompleteHandler.class, WarCompleteMessage.class);
 
         if(side == Side.SERVER) {
             StateManager.getInstance().setSide(side = event.getSide());
