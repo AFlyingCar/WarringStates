@@ -210,7 +210,7 @@ public class ProtectionHandler {
 
                 if(WarringStatesConfig.requireSkyExposure && !skipSkyCheck && !event.getWorld().canBlockSeeSky(position)) {
                     entity.sendMessage(new TextComponentTranslation("warring_states.messages.must_be_exposed_to_sky"));
-                    WorldUtils.destroyClaimer(event.getWorld(), position);
+                    WorldUtils.destroyClaimer(event.getWorld(), position, false);
                     event.setCanceled(true);
                     return;
                 }

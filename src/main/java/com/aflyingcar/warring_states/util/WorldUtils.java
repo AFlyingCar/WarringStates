@@ -147,7 +147,7 @@ public class WorldUtils {
     @CheckReturnValue
     public static boolean destroyClaimer(ExtendedBlockPos position) {
         World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(position.getDimID());
-        return destroyClaimer(world, position);
+        return destroyClaimer(world, position, true);
     }
 
     /**
@@ -157,6 +157,17 @@ public class WorldUtils {
      * @return true if the claimer was destroyed, false otherwise
      */
     public static boolean destroyClaimer(World world, BlockPos position) {
+        return destroyClaimer(world, position, true);
+    }
+
+    /**
+     * Destroys a TileEntityClaimer
+     * @param world The world the claimer exists in
+     * @param position The position of the claimer
+     * @param doDropClaimer Should a claimer item be dropped?
+     * @return true if the claimer was destroyed, false otherwise
+     */
+    public static boolean destroyClaimer(World world, BlockPos position, boolean doDropClaimer) {
         TileEntity te = world.getTileEntity(position);
         if(!(te instanceof TileEntityClaimer)) {
             return false;
@@ -181,8 +192,10 @@ public class WorldUtils {
             world.setBlockToAir(position.up());
         }
 
-        // Spawn an entityItem in the world to represent the now-destroyed claimer
-        WarringStatesBlocks.BLOCK_CLAIMER.dropBlockAsItem(world, position, WarringStatesBlocks.BLOCK_CLAIMER.getDefaultState(), 0);
+        if(doDropClaimer) {
+            // Spawn an entityItem in the world to represent the now-destroyed claimer
+            WarringStatesBlocks.BLOCK_CLAIMER.dropBlockAsItem(world, position, WarringStatesBlocks.BLOCK_CLAIMER.getDefaultState(), 0);
+        }
 
         return true;
     }
