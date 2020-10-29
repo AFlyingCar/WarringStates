@@ -13,6 +13,7 @@ public class TerritoryClaimedEvent extends Event {
     private final BlockPos pos;
 
     private String reasonKey;
+    private Object[] reasonArgs;
 
     public TerritoryClaimedEvent(State state, World world, BlockPos position) {
         this.state = state;
@@ -36,7 +37,11 @@ public class TerritoryClaimedEvent extends Event {
         this.reasonKey = reason;
     }
 
+    public void setFailureArguments(Object... args) {
+        this.reasonArgs = args;
+    }
+
     public TextComponentBase getFailureReason() {
-        return new TextComponentTranslation(reasonKey);
+        return new TextComponentTranslation(reasonKey, reasonArgs);
     }
 }

@@ -48,7 +48,6 @@ public class State implements ISerializable {
     private Timer decayTimer; // Counts time since last online player logged off
     private Timer formationTimer; // Counts time since formation of this state
     private boolean hasDecayed;
-    private long lastClaimTicks;
 
     public State() {
         this(null, "", "");
@@ -142,7 +141,6 @@ public class State implements ISerializable {
      */
     public void onStateFounded() {
         formationTimer.start();
-        lastClaimTicks = 0;
     }
 
     /**
@@ -360,8 +358,25 @@ public class State implements ISerializable {
         return controlledTerritory.stream().map(ChunkGroup::getChunks).map(Set::size).reduce(0, Integer::sum);
     }
 
-    public long getTotalTimeToWaitBeforeNextClaim() {
-        return (Timer.VANILLA_TICKS_PER_HOUR * WarringStatesConfig.baseClaimWaitTime) + (sizeClaimedChunks() * Timer.VANILLA_TICKS_PER_MINUTE * WarringStatesConfig.claimWaitTimeMultiplier);
+    /**
+     * How much time must have passed since the founding of this State before you are allowed to make another claim
+     * @return The amount of time in ticks that must have passed since the founding of this State before another chunk claim can be made
+     */
+    public long getNextClaimThreshold() {
+        int c = sizeClaimedChunks();
+        int p = getCitizens().size();
+
+        // Adjust values
+        long B = Timer.VANILLA_TICKS_PER_MINUTE * WarringStatesConfig.baseClaimWaitTime;
+        long Mc = Timer.VANILLA_TICKS_PER_MINUTE * WarringStatesConfig.claimWaitTimeMultiplier;
+        long Mp = Timer.VANILLA_TICKS_PER_MINUTE * WarringStatesConfig.claimCitizenTimeMultiplier;
+
+        // Calculate each part of the equation
+        long totalBase = B * c;
+        long totalScaleUp = c * Mc;
+        long totalScaleDown = WarringStatesConfig.boostStatesWithMorePeople ? ((p * Mp)/* / totalScaleUp*/) : 0;
+
+        return totalBase + totalScaleUp - totalScaleDown;
     }
 
     /**
@@ -374,9 +389,7 @@ public class State implements ISerializable {
         if(sizeClaimedChunks() <= WarringStatesConfig.numFreeClaims)
             return true;
 
-        long timeSinceLastClaim = formationTimer.getCurrentTick() - lastClaimTicks;
-
-        return timeSinceLastClaim >= getTotalTimeToWaitBeforeNextClaim();
+        return formationTimer.getCurrentTick() >= getNextClaimThreshold();
     }
 
     /**
@@ -400,8 +413,6 @@ public class State implements ISerializable {
         if(getCapital() == null) {
             capital = controlledTerritory.indexOf(group);
         }
-
-        lastClaimTicks = formationTimer.getCurrentTick();
 
         WarringStatesMod.proxy.markStateManagerDirty();
     }
@@ -428,9 +439,6 @@ public class State implements ISerializable {
                 this.capital = (capital == null ? -1 : controlledTerritory.indexOf(capital));
             }
         }
-
-        // Reset this to 0 so that you can claim more territory immediately afterwards
-        lastClaimTicks = 0;
 
         WarringStatesMod.proxy.markStateManagerDirty();
 
@@ -650,20 +658,16 @@ public class State implements ISerializable {
         return "State{UUID=" + uuid + ", Name=" + name + "}";
     }
 
-    protected long getLastClaimTicks() {
-        return lastClaimTicks;
-    }
-
     protected Timer getFormationTimer() {
         return formationTimer;
     }
 
-    protected void setFormationTimer(Timer timer) {
-        formationTimer = timer;
+    public long getFormationTicks() {
+        return formationTimer.getCurrentTick();
     }
 
-    protected void setLastClaimTicks(long lastClaimTicks) {
-        this.lastClaimTicks = lastClaimTicks;
+    protected void setFormationTimer(Timer timer) {
+        formationTimer = timer;
     }
 
     protected List<ChunkGroup> getControlledTerritory() {

@@ -29,7 +29,6 @@ public class DummyState extends State {
         setDecayTimer(state.getDecayTimer());
         setFormationTimer(state.getFormationTimer());
         setHasDecayed(state.hasDecayed());
-        setLastClaimTicks(state.getLastClaimTicks());
         getControlledTerritory().addAll(state.getControlledTerritory());
         getAllApplications().addAll(state.getAllApplications());
         getCitizensWithPrivileges().putAll(state.getCitizensWithPrivileges());
@@ -53,7 +52,6 @@ public class DummyState extends State {
         NetworkUtils.writeTimer(buf, state.getFormationTimer());
 
         buf.writeBoolean(state.hasDecayed());
-        buf.writeLong(state.getLastClaimTicks());
 
         NetworkUtils.writeCollection(buf, state.getControlledTerritory(), NetworkUtils::writeChunkGroup);
 
@@ -68,7 +66,6 @@ public class DummyState extends State {
         setDecayTimer(NetworkUtils.readTimer(buf));
         setFormationTimer(NetworkUtils.readTimer(buf));
         setHasDecayed(buf.readBoolean());
-        setLastClaimTicks(buf.readLong());
 
         getControlledTerritory().clear();
         getControlledTerritory().addAll(NetworkUtils.readList(buf, NetworkUtils::readChunkGroup));

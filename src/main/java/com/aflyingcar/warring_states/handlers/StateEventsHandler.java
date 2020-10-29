@@ -103,9 +103,10 @@ public class StateEventsHandler {
 
     @SubscribeEvent
     public static void onTerritoryClaimed(TerritoryClaimedEvent event) {
-        if(!WarringStatesAPI.claimChunkForState(event.getState(), event.getWorld().getChunk(event.getPos()).getPos(), WorldUtils.getDimensionIDForWorld((WorldServer)event.getWorld()))) {
+        if(!WarringStatesAPI.claimChunkForState(event.getState(), event.getWorld().getChunk(event.getPos()).getPos(), WorldUtils.getDimensionIDForWorld(event.getWorld()))) {
             event.setResult(Event.Result.DENY);
             event.setFailureKey("warring_states.messages.claim_failure_reason.claiming_too_soon_after_last");
+            event.setFailureArguments("" + Timer.toMinutes(event.getState().getNextClaimThreshold() - event.getState().getFormationTicks()));
         }
     }
 
