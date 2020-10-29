@@ -27,6 +27,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -97,6 +98,11 @@ public class ProtectionHandler {
 
         EntityPlayer player = event.getPlayer();
 
+        // Allow FakePlayers (usually world-interacting machines) to break blocks
+        if(player instanceof FakePlayer) {
+            return;
+        }
+
         // Allow the block break to continue regardless of protections if we have a specific exception for it.
         if(WarringStatesAPI.hasBlockBreakException(event.getPlayer(), event.getWorld(), event.getPos(), event.getState())) {
             return;
@@ -166,6 +172,11 @@ public class ProtectionHandler {
         if(event.getWorld().isRemote) return;
 
         Entity entity = event.getEntity();
+
+        // Allow FakePlayers (usually world-interacting machines) to place blocks
+        if(entity instanceof FakePlayer) {
+            return;
+        }
 
         // Check if block placed is a BlockClaimer, and then make sure that they have permission to claim territory here
         Block placedBlock = event.getPlacedBlock().getBlock();
@@ -293,6 +304,11 @@ public class ProtectionHandler {
 
         Entity placer = event.getEntity();
 
+        // Allow FakePlayers (usually world-interacting machines) to fill or empty buckets
+        if(placer instanceof FakePlayer) {
+            return;
+        }
+
         if(placer instanceof EntityPlayer) {
             IBlockState blockState = event.getWorld().getBlockState(fillPos);
 
@@ -318,6 +334,11 @@ public class ProtectionHandler {
         if(event.getWorld().isRemote) return;
 
         EntityPlayer player = event.getEntityPlayer();
+
+        // Allow FakePlayers (usually world-interacting machines) to interact with blocks
+        if(player instanceof FakePlayer) {
+            return;
+        }
 
         if(player.isCreative() && WarringStatesConfig.allowCreativeToIgnoreProtections) {
             return;
@@ -387,6 +408,11 @@ public class ProtectionHandler {
         Entity trampler = event.getEntity();
         BlockPos cropsPos = event.getPos();
 
+        // Allow FakePlayers (usually world-interacting machines) to trample blocks
+        if(trampler instanceof FakePlayer) {
+            return;
+        }
+
         State owningState = StateManager.getInstance().getStateAtPosition(event.getWorld(), cropsPos);
 
         // No protections for crops outside of claimed territory
@@ -436,6 +462,11 @@ public class ProtectionHandler {
 
         // No protection outside of claimed territory
         if(owningState == null) {
+            return;
+        }
+
+        // Allow FakePlayers (usually world-interacting machines) to attack things
+        if(attacker instanceof FakePlayer) {
             return;
         }
 
