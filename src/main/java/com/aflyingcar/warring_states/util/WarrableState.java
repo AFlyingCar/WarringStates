@@ -51,10 +51,7 @@ public class WarrableState implements INetSerializable {
         NetworkUtils.writeString(buf, targetStateName);
         NetworkUtils.writeUUID(buf, targetStateID);
         NetworkUtils.writeCollection(buf, onlinePlayers, NetworkUtils::writeUUID);
-        NetworkUtils.writeCollection(buf, warGoals, (b, t) -> {
-            NetworkUtils.writeString(b, t.getClass().getName());
-            NetworkUtils.writeNetSerializable(b, t);
-        });
+        NetworkUtils.writeCollection(buf, warGoals, NetworkUtils::writeNetSerializable);
     }
 
     @Override
