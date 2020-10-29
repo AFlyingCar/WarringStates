@@ -49,6 +49,7 @@ public class RescindTerritoryClaimHandler implements IMessageHandler<RescindTerr
             if(!state.unclaimTerritory(world.getChunk(pos).getPos(), pos.getDimID())) {
                 if(player != null)
                     player.sendMessage(new TextComponentTranslation("warring_states.messages.cannot_rescind_capitol"));
+                return;
             }
 
             if(!WorldUtils.destroyClaimer(pos)) {
