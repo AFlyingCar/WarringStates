@@ -1,13 +1,17 @@
 package com.aflyingcar.warring_states.handlers;
 
 import com.aflyingcar.warring_states.WarringStatesMod;
+import com.aflyingcar.warring_states.WarringStatesNetwork;
 import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.api.WarringStatesAPI;
 import com.aflyingcar.warring_states.events.*;
+import com.aflyingcar.warring_states.network.messages.WarCompleteMessage;
+import com.aflyingcar.warring_states.network.messages.WarDeclaredMessage;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.tileentities.TileEntityClaimer;
 import com.aflyingcar.warring_states.util.PlayerUtils;
+import com.aflyingcar.warring_states.util.Timer;
 import com.aflyingcar.warring_states.util.WorldUtils;
 import com.aflyingcar.warring_states.war.Conflict;
 import com.aflyingcar.warring_states.war.WarManager;
@@ -16,7 +20,6 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -41,13 +44,20 @@ public class StateEventsHandler {
         Set<UUID> defenders = war.getDefenders().keySet().stream().map(State::getUUID).collect(Collectors.toSet());
         Set<UUID> belligerents = war.getBelligerents().keySet().stream().map(State::getUUID).collect(Collectors.toSet());
 
+        String belligerentNames = war.getBelligerents().keySet().stream().map(State::getName).collect(Collectors.joining(","));
+        String defenderNames = war.getDefenders().keySet().stream().map(State::getName).collect(Collectors.joining(","));
+
         for(State belligerent : war.getBelligerents().keySet()) {
             belligerent.onWarDeclaredOn(defenders);
+            belligerent.getCitizens().stream().map(PlayerUtils::getPlayerByUUID).filter(Objects::nonNull).forEach(player -> player.sendMessage(new TextComponentTranslation("warring_states.messages.declare_war.belligerent", defenderNames)));
         }
 
         for(State defender : war.getDefenders().keySet()) {
             defender.onWarDeclaredBy(belligerents);
+            defender.getCitizens().stream().map(PlayerUtils::getPlayerByUUID).filter(Objects::nonNull).forEach(player -> player.sendMessage(new TextComponentTranslation("warring_states.messages.declare_war.defender", belligerentNames)));
         }
+
+        WarringStatesNetwork.NETWORK.sendToAll(new WarDeclaredMessage(war));
     }
 
     @SubscribeEvent
@@ -99,6 +109,8 @@ public class StateEventsHandler {
         war.rollbackChanges();
 
         WarManager.getInstance().startWarWaitTimers(war);
+
+        WarringStatesNetwork.NETWORK.sendToAll(new WarCompleteMessage(war));
     }
 
     @SubscribeEvent
