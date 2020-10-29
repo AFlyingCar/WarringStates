@@ -24,6 +24,10 @@ public class Timer implements ISerializable {
     private long currentTick = 0;
     private boolean started = false;
 
+    public static double toMinutes(long ticks) {
+        return ((double)ticks) / VANILLA_TICKS_PER_MINUTE;
+    }
+
     public Timer() {
     }
 
