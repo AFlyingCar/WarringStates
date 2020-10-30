@@ -11,6 +11,7 @@ import com.aflyingcar.warring_states.util.WorldUtils;
 import com.aflyingcar.warring_states.war.WarManager;
 import com.aflyingcar.warring_states.war.goals.DefaultWargoalClaimers;
 import com.aflyingcar.warring_states.war.goals.WarGoalFactory;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemElytra;
@@ -103,7 +104,13 @@ public class CommonProxy {
     }
 
     public void registerDefaultFlyingCheckAndConsumers() {
-        registerFlyingCheckAndStopper(player -> player.capabilities.isFlying, player -> player.capabilities.isFlying = false);
+        registerFlyingCheckAndStopper(player -> player.capabilities.isFlying, player -> {
+            player.capabilities.isFlying = false;
+            player.sendPlayerAbilities();
+        });
+
+        // Disable elytra flying during a war
+        registerFlyingCheckAndStopper(EntityLivingBase::isElytraFlying, player -> player.onGround = true);
     }
 
     public void registerDefaultDoesItemAllowFlightPredicates() {
