@@ -188,6 +188,18 @@ public class Conflict implements ISerializable {
         DEFENDER,
         BELLIGERENT,
         WAR_NOT_OVER,
+        ;
+
+        public String getName() {
+            switch(this) {
+                case DEFENDER:
+                    return "defender";
+                case BELLIGERENT:
+                    return "belligerent";
+                default:
+                    return "<NULL>";
+            }
+        }
     }
 
     @Nonnull
