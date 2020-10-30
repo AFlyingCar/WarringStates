@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -143,7 +144,7 @@ public class CommonProxy {
         return PlayerUtils.isPlayerOnline(playerUUID);
     }
 
-    public void registerFlyingCheckAndStopper(Predicate<EntityPlayer> isFlyingPredicate, Consumer<EntityPlayer> stopFlyingConsumer) {
+    public void registerFlyingCheckAndStopper(@Nonnull Predicate<EntityPlayer> isFlyingPredicate, @Nonnull Consumer<EntityPlayer> stopFlyingConsumer) {
         isFlyingPredicates.add(isFlyingPredicate);
         stopFlyingConsumers.add(stopFlyingConsumer);
     }
