@@ -145,8 +145,6 @@ public class TileEntityClaimer extends TileEntity implements IInventory, ITickab
 
                     // Check if a war is going on
                     if(conflict != null) {
-                        conflict.getRight().startWarTimer();
-
                         // Only begin capturing this chunk if the player's state actually has a wargoal for it
                         List<IWarGoal> goals = conflict.getRight().getWargoalsForSide(conflict.getRight().getSideOf(playerState));
                         if(goals.parallelStream().filter(StealChunkWarGoal.class::isInstance).map(StealChunkWarGoal.class::cast)

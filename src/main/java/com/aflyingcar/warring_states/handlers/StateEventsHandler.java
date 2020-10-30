@@ -56,6 +56,8 @@ public class StateEventsHandler {
             defender.getCitizens().stream().map(PlayerUtils::getPlayerByUUID).filter(Objects::nonNull).forEach(player -> player.sendMessage(new TextComponentTranslation("warring_states.messages.declare_war.defender", belligerentNames)));
         }
 
+        war.startWarTimer();
+
         WarringStatesNetwork.NETWORK.sendToAll(new WarDeclaredMessage(war));
     }
 
