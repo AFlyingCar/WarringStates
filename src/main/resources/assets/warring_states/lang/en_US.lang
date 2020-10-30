@@ -45,6 +45,7 @@ warring_states.messages.cannot_rescind_capitol=You cannot rescind your claim on 
 warring_states.messages.no_longer_exposed_to_sky_warning=The claimer for this chunk can no longer see the sky! It will self destruct in %s minutes.
 warring_states.messages.must_be_exposed_to_sky=The claimer must be exposed to the sky.
 warring_states.messages.claim_failure_reason.claiming_too_soon_after_last=Not enough time has passed since the last claim. %s minutes remaining.
+warring_states.messages.announce_winner_message=The %ss have won!
 
 warring_states.messages.declare_war.defender=You have been declared war upon by %s.
 warring_states.messages.declare_war.belligerent=You declared war against %s.

@@ -18,7 +18,6 @@ import com.aflyingcar.warring_states.war.WarManager;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -72,19 +71,6 @@ public class StateEventsHandler {
         Conflict.Side winner = war.getWinner();
 
         if(winner == Conflict.Side.BELLIGERENT) {
-            for(UUID player : war.getBelligerents().keySet().stream().map(State::getCitizens).flatMap(Collection::stream).collect(Collectors.toList())) {
-                EntityPlayerMP playerEntity = PlayerUtils.getPlayerByUUID(player);
-                if(playerEntity != null) {
-                    playerEntity.sendMessage(new TextComponentString("The belligerents have won!"));
-                }
-            }
-            for(UUID player : war.getDefenders().keySet().stream().map(State::getCitizens).flatMap(Collection::stream).collect(Collectors.toList())) {
-                EntityPlayerMP playerEntity = PlayerUtils.getPlayerByUUID(player);
-                if(playerEntity != null) {
-                    playerEntity.sendMessage(new TextComponentString("The belligerents have won!"));
-                }
-            }
-
             for(Map.Entry<State, NonNullList<IWarGoal>> belligerent : war.getBelligerents().entrySet()) {
                 // Winner is the belligerents, tell them that they have won
                 belligerent.getKey().onWarWon(defenders);
@@ -103,6 +89,19 @@ public class StateEventsHandler {
                 // Winner is the defenders, tell them that they have won
                 defender.getKey().onWarWon(belligerents);
                 defender.getValue().forEach(goal -> goal.onSuccess(defender.getKey()));
+            }
+        }
+
+        for(UUID player : war.getBelligerents().keySet().stream().map(State::getCitizens).flatMap(Collection::stream).collect(Collectors.toList())) {
+            EntityPlayerMP playerEntity = PlayerUtils.getPlayerByUUID(player);
+            if(playerEntity != null) {
+                playerEntity.sendMessage(new TextComponentTranslation("warring_states.messages.announce_winner_message", winner.getName()));
+            }
+        }
+        for(UUID player : war.getDefenders().keySet().stream().map(State::getCitizens).flatMap(Collection::stream).collect(Collectors.toList())) {
+            EntityPlayerMP playerEntity = PlayerUtils.getPlayerByUUID(player);
+            if(playerEntity != null) {
+                playerEntity.sendMessage(new TextComponentTranslation("warring_states.messages.announce_winner_message", winner.getName()));
             }
         }
 
