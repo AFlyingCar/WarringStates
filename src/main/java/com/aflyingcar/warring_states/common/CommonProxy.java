@@ -105,17 +105,21 @@ public class CommonProxy {
     }
 
     public void registerDefaultFlyingCheckAndConsumers() {
-        registerFlyingCheckAndStopper(player -> player.capabilities.isFlying, player -> {
-            player.capabilities.isFlying = false;
-            player.sendPlayerAbilities();
-        });
+        if(!WarringStatesConfig.shoulElytraBeAllowedDuringWar) {
+            registerFlyingCheckAndStopper(player -> player.capabilities.isFlying, player -> {
+                player.capabilities.isFlying = false;
+                player.sendPlayerAbilities();
+            });
+        }
 
         // Disable elytra flying during a war
         registerFlyingCheckAndStopper(EntityLivingBase::isElytraFlying, player -> player.onGround = true);
     }
 
     public void registerDefaultDoesItemAllowFlightPredicates() {
-        registerDoesItemAllowFlightPredicate(ItemElytra.class::isInstance);
+        if(!WarringStatesConfig.shoulElytraBeAllowedDuringWar) {
+            registerDoesItemAllowFlightPredicate(ItemElytra.class::isInstance);
+        }
     }
 
     public void registerDefaultWargoalClaimers() {

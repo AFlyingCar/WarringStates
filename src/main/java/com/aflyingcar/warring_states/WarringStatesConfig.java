@@ -111,4 +111,7 @@ public class WarringStatesConfig {
                      "0 => Sky exposure restriction is lifted if wargoals exist.",
                      "1 => Wargoals are removed with the destruction of the claimer."})
     public static int skyExposureBehaviorWhenWargoalsExist = 0;
+
+    @Config.Comment("Allow elytra during a war.")
+    public static boolean shoulElytraBeAllowedDuringWar = false;
 }
