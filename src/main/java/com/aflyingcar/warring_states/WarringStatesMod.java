@@ -17,6 +17,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -159,16 +160,6 @@ public class WarringStatesMod {
     }
 
     /**
-     * Forge will automatically look up and bind blocks to the fields in this class
-     * based on their registry name.
-     */
-    @SuppressWarnings("unused")
-    @GameRegistry.ObjectHolder(MOD_ID)
-    public static class Blocks {
-          public static final BlockClaimer BLOCK_CLAIMER = null; // placeholder for special block below
-    }
-
-    /**
      * This is a special class that listens to registry events, to allow creation of mod blocks and items at the proper time.
      */
     @Mod.EventBusSubscriber
@@ -198,6 +189,11 @@ public class WarringStatesMod {
             ModelLoader.setCustomModelResourceLocation(WarringStatesItems.FLAG_BASE, 0, new ModelResourceLocation(WarringStatesItems.FLAG_BASE.getRegistryName(), "inventory"));
             ModelLoader.setCustomModelResourceLocation(WarringStatesItems.WARGOAL_CLAIMER, 0, new ModelResourceLocation(WarringStatesItems.WARGOAL_CLAIMER.getRegistryName(), "inventory"));
             ModelLoader.setCustomModelResourceLocation(WarringStatesItems.CLAIMER, 0, new ModelResourceLocation(WarringStatesItems.CLAIMER.getRegistryName(), "inventory"));
+        }
+
+        @SubscribeEvent
+        public static void addPotions(RegistryEvent.Register<Potion> event) {
+            event.getRegistry().register(WarringStatesPotions.POTION_SLOW_FALLING);
         }
     }
 }

@@ -3,19 +3,18 @@ package com.aflyingcar.warring_states.handlers;
 import com.aflyingcar.warring_states.WarringStatesConfig;
 import com.aflyingcar.warring_states.WarringStatesMod;
 import com.aflyingcar.warring_states.WarringStatesNetwork;
+import com.aflyingcar.warring_states.WarringStatesPotions;
 import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.network.messages.WarDeclaredMessage;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
 import com.aflyingcar.warring_states.war.Conflict;
 import com.aflyingcar.warring_states.war.WarManager;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -26,7 +25,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.List;
-import java.util.Objects;
 
 @Mod.EventBusSubscriber(modid = WarringStatesMod.MOD_ID)
 public class PlayerEventsHandler {
@@ -49,9 +47,9 @@ public class PlayerEventsHandler {
         if(WarringStatesMod.proxy.isFlying(mpPlayer) && WarManager.getInstance().isAtWar(mpPlayer)) {
             WarringStatesMod.proxy.stopFlying(mpPlayer);
 
-            mpPlayer.addPotionEffect(new PotionEffect(Objects.requireNonNull(Potion.getPotionFromResourceLocation("feather_falling"))));
+            mpPlayer.addPotionEffect(new PotionEffect(WarringStatesPotions.POTION_SLOW_FALLING, 0));
 
-            mpPlayer.sendMessage(new TextComponentString(I18n.format("warring_states.messages.player_stop_flying")));
+            mpPlayer.sendMessage(new TextComponentTranslation("warring_states.messages.player_stop_flying"));
 
             // TODO: Do we need to do anything else to players during a war?
             // TODO: Totem of Undying???
