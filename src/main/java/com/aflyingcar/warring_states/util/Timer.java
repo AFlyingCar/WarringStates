@@ -42,6 +42,10 @@ public class Timer implements ISerializable {
         this.started = started;
     }
 
+    public static long toTicksFromSeconds(long seconds) {
+        return seconds * VANILLA_TICKS_PER_SECOND;
+    }
+
     public void start() {
         if(started) return;
 

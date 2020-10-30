@@ -8,6 +8,7 @@ import com.aflyingcar.warring_states.api.IWarGoal;
 import com.aflyingcar.warring_states.network.messages.WarDeclaredMessage;
 import com.aflyingcar.warring_states.states.State;
 import com.aflyingcar.warring_states.states.StateManager;
+import com.aflyingcar.warring_states.util.Timer;
 import com.aflyingcar.warring_states.war.Conflict;
 import com.aflyingcar.warring_states.war.WarManager;
 import net.minecraft.entity.EntityLivingBase;
@@ -47,7 +48,11 @@ public class PlayerEventsHandler {
         if(WarringStatesMod.proxy.isFlying(mpPlayer) && WarManager.getInstance().isAtWar(mpPlayer)) {
             WarringStatesMod.proxy.stopFlying(mpPlayer);
 
-            mpPlayer.addPotionEffect(new PotionEffect(WarringStatesPotions.POTION_SLOW_FALLING, 0));
+            State playerState = StateManager.getInstance().getStateFromPlayer(mpPlayer);
+
+            // Only apply this potion effect if the war has just started.
+            if(playerState != null && WarManager.getInstance().getAllConflictsInvolving(playerState).stream().anyMatch(c -> c.getWarStartTimer().getNumberOfSeconds() < 5))
+                mpPlayer.addPotionEffect(new PotionEffect(WarringStatesPotions.POTION_SLOW_FALLING, (int)Timer.toTicksFromSeconds(15)));
 
             mpPlayer.sendMessage(new TextComponentTranslation("warring_states.messages.player_stop_flying"));
 
