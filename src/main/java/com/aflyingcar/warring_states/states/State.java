@@ -670,7 +670,7 @@ public class State implements ISerializable {
         formationTimer = timer;
     }
 
-    protected List<ChunkGroup> getControlledTerritory() {
+    public List<ChunkGroup> getControlledTerritory() {
         return controlledTerritory;
     }
 }
